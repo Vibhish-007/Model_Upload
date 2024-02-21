@@ -66,6 +66,7 @@ ON
 
 
 query_1 = (select * from  [SRVC_DLVR].[DASH].[WIP_ORDER_BLOCKER]  where blk_seq=1) as WIP_BLOCKER
+ON WIP.primary_order_item = WIP_BLOCKER.PRIMARY_ORDER_ITEM
 
 cursor.execute(query, query_1)
 
