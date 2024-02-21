@@ -48,21 +48,25 @@ See the output is not fully completed the llm has working good it has potential 
 
 
 
-import pandas as pd
+query="""SELECT WIP.*,
+    CASE 
+        WHEN MD_counts.onnet_count > 0 THEN 'Yes' ELSE 'No' 
+    END as 'onnet',COALESCE(MD_counts.onnet_count, 0) as onnet_count
+FROM 
+    (SELECT *, COUNT(*) OVER(PARTITION BY primary_order_item) as total_count
+    FROM [DASH].[VW_TASK_DATA_WIP_ORDER] 
+    WHERE START_DATE >= GETDATE() - 20 AND order_status = 'Installed' AND Product_Category ='IP') as WIP
+INNER JOIN
+    (SELECT SRVC_ORDER_UNIT, COUNT(*) as onnet_count
+    FROM [DASH].MEASURED_DATA
+    WHERE ACCESS_METHOD = 'On-Net'
+    GROUP BY SRVC_ORDER_UNIT) as MD_counts
+ON 
+    WIP.primary_order_item = MD_counts.SRVC_ORDER_UNIT"""
 
-# Sample DataFrames
-df1 = pd.DataFrame({'key': ['A', 'B', 'C'], 'value_df1': [1, 2, 3], 'common_col': [10, 11, 12]})
-df2 = pd.DataFrame({'key': ['A', 'B', 'D'], 'value_df2': [4, 5, 6], 'common_col': [20, 21, 22]})
 
-# Merge the DataFrames based on 'key' with left join
-merged_df = pd.merge(df1, df2, on='key', how='left', suffixes=('_df1', '_df2'))
+query_1 = (select * from  [SRVC_DLVR].[DASH].[WIP_ORDER_BLOCKER]  where blk_seq=1) as WIP_BLOCKER
 
-# Concatenate common columns
-common_cols = [col for col in df1.columns if col in df2.columns and col != 'key']
-for col in common_cols:
-    merged_df[col] = merged_df[col + '_df1'].combine_first(merged_df[col + '_df2'])
-    merged_df.drop(columns=[col + '_df1', col + '_df2'], inplace=True)
+cursor.execute(query, query_1)
 
-# Print the merged DataFrame
-print(merged_df)
 
