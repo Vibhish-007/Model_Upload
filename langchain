@@ -152,4 +152,5 @@ SELECT 'Query_Result_2' AS Query_Source,
 FROM Query_Result_2;"""
 
 
+Unable to allocate 125. MiB for an array with shape (4, 4103347) and data type int64
 
