@@ -173,6 +173,21 @@ new_df = pd.DataFrame({"RUN_DT":RUN_DT,
 
 
 
+# Calculate correlation matrix
+correlation_matrix = df.corr()
+
+# Print correlation matrix
+print("Correlation Matrix:")
+print(correlation_matrix)
+
+# Visualize correlation matrix (optional)
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(10, 8))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+plt.title("Correlation Matrix")
+plt.show()
 
 
 
