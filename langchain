@@ -189,6 +189,15 @@ sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
 plt.title("Correlation Matrix")
 plt.show()
 
+# Interpret correlation matrix
+print("Interpreting Correlation Matrix:")
+for column in correlation_matrix.columns:
+    correlated_columns = correlation_matrix.index[abs(correlation_matrix[column]) > 0.5].tolist()
+    correlated_columns.remove(column)  # Remove the column itself from correlated columns
+    if len(correlated_columns) > 0:
+        print(f"Column '{column}' has strong correlation with columns: {', '.join(correlated_columns)}")
+    else:
+        print(f"Column '{column}' does not have strong correlation with other columns.")
 
 
 
