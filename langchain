@@ -48,109 +48,124 @@ See the output is not fully completed the llm has working good it has potential 
 
 
 
-query="""SELECT WIP.*,
-    CASE 
-        WHEN MD_counts.onnet_count > 0 THEN 'Yes' ELSE 'No' 
-    END as 'onnet',COALESCE(MD_counts.onnet_count, 0) as onnet_count
-FROM 
-    (SELECT *, COUNT(*) OVER(PARTITION BY primary_order_item) as total_count
-    FROM [DASH].[VW_TASK_DATA_WIP_ORDER] 
-    WHERE START_DATE >= GETDATE() - 20 AND order_status = 'Installed' AND Product_Category ='IP') as WIP
-INNER JOIN
-    (SELECT SRVC_ORDER_UNIT, COUNT(*) as onnet_count
-    FROM [DASH].MEASURED_DATA
-    WHERE ACCESS_METHOD = 'On-Net'
-    GROUP BY SRVC_ORDER_UNIT) as MD_counts
-ON 
-    WIP.primary_order_item = MD_counts.SRVC_ORDER_UNIT"""
+RUN_DT = []
+primary_order_item = []
+ECO_SOURCE = []
+Product_Category = []
+net_mrr = []
+order_status = []
+CUST_ORDER_NBR = []
+SERV_ORDER_NBR  = []
+SOU  = []
+SERVICE_ID = []
+TASK_NAME = []
+TASK_STATUS = []
+START_DATE = []
+END_DATE = []
+CUST_ORDER_SOURCE = []
+DW_SOURCE_SYSTEM = []
+MODIFIED_DT = []
+PRODUCT_NAME = []
+SERV_ORDER_TYP = []
+SERV_ORDER_ACTION_TYP = []
+SERV_ORDER_STATUS = []
+CUST_COMMIT_DT = []
+PRODUCT = []
+CUST_REQST_DT = []
+TASK_CREATE_DT = []
+A_COUNTRY_NAME = []
+Z_COUNTRY_NAME = []
+TASK_DUE_DT = []
+IS_NEW_VERSION = []
+SM_VERSION = []
+# M_VERSION = []
+IS_FALLOUT_TASK = []
+ONNET=[]
+total_tasks = []
+total_products = []
+"Total_Tasks","total_products","total_fallouts",
+ONNET_COUNT=[]
+for order_id in df['primary_order_item'].unique():
+    sub_df = df[df['primary_order_item'] == order_id]
+    sub_df = sub_df.sort_values(by="START_DATE",ascending=True)
+    total_tasks.append(len(sub_df))
+    total_products.append(sub_df['PRODUCT_NAME'].nunique())
+    RUN_DT.append(sub_df['RUN_DT'].iloc[0])
+    primary_order_item.append(sub_df['primary_order_item'].iloc[0])
+    ECO_SOURCE.append(sub_df['ECO_SOURCE'].iloc[0])
+    Product_Category.append(sub_df['Product_Category'].iloc[0])
+    net_mrr.append(sub_df['net_mrr'].iloc[0])
+    order_status.append(sub_df['order_status'].iloc[0])
+    CUST_ORDER_NBR.append(sub_df['CUST_ORDER_NBR'].iloc[0])
+    SERV_ORDER_NBR.append(sub_df['SERV_ORDER_NBR'].iloc[0]) 
+    SOU.append(sub_df['SOU'].iloc[0])
+    SERVICE_ID.append(sub_df['SERVICE_ID'].iloc[0])
+    TASK_NAME.append(len(sub_df['TASK_NAME'].unique()))
+    try:
+        TASK_STATUS.append((dict(sub_df['TASK_STATUS'].value_counts())['Completed']/len(sub_df))*100)
+    except:
+        TASK_STATUS.append(0)
+    START_DATE.append(sub_df['START_DATE'].iloc[0])
+    END_DATE.append(sub_df['END_DATE'].iloc[0])
+    CUST_ORDER_SOURCE.append(sub_df['CUST_ORDER_SOURCE'].iloc[0])
+    DW_SOURCE_SYSTEM.append(sub_df['DW_SOURCE_SYSTEM'].iloc[0])
+    MODIFIED_DT.append(sub_df['MODIFIED_DT'].iloc[0])
+    prd = ','.join(sub_df['PRODUCT_NAME'].dropna().unique())
+    PRODUCT_NAME.append(prd)
+    
+    SERV_ORDER_TYP.append(sub_df['SERV_ORDER_TYP'].iloc[0])
+    SERV_ORDER_ACTION_TYP.append(sub_df['SERV_ORDER_ACTION_TYP'].iloc[0])
+    SERV_ORDER_STATUS.append(sub_df['SERV_ORDER_STATUS'].iloc[0])
+    CUST_COMMIT_DT.append(sub_df['CUST_COMMIT_DT'].iloc[0])
+    PRODUCT.append(sub_df['PRODUCT'].iloc[0])
+    CUST_REQST_DT.append(sub_df['CUST_REQST_DT'].iloc[0])
+    TASK_CREATE_DT.append(sub_df['TASK_CREATE_DT'].iloc[0])
+    A_COUNTRY_NAME.append(sub_df['A_COUNTRY_NAME'].iloc[0])
+    Z_COUNTRY_NAME.append(sub_df['Z_COUNTRY_NAME'].iloc[0])
+    TASK_DUE_DT.append(sub_df['TASK_DUE_DT'].iloc[-1])
+    IS_NEW_VERSION.append(sub_df['IS_NEW_VERSION'].iloc[0])
+    SM_VERSION.append(sub_df['SM_VERSION'].iloc[0])
+    ONNET.append(sub_df['onnet'].iloc[0])
+    ONNET_COUNT.append(sub_df['onnet_count'].iloc[0])
+    # M_VERSION.append(sub_df['M_VERSION'].iloc[0])
+    try:
+        IS_FALLOUT_TASK.append((sub_df['IS_FALLOUT_TASK'].value_counts()[1]/len(sub_df))*100)
+    except KeyError:
+        IS_FALLOUT_TASK.append(0)
 
-
-query_1 = (select * from  [SRVC_DLVR].[DASH].[WIP_ORDER_BLOCKER]  where blk_seq=1) as WIP_BLOCKER
-ON WIP.primary_order_item = WIP_BLOCKER.PRIMARY_ORDER_ITEM
-
-cursor.execute(query, query_1)
-
--- Common table expression (CTE) to store the results of the first query
-WITH Query_Result_1 AS (
-    SELECT WIP.*, 
-           CASE 
-               WHEN MD_counts.onnet_count > 0 THEN 'Yes' 
-               ELSE 'No' 
-           END as 'onnet',
-           COALESCE(MD_counts.onnet_count, 0) as onnet_count
-    FROM 
-        (SELECT *, COUNT(*) OVER(PARTITION BY primary_order_item) as total_count
-         FROM [DASH].[VW_TASK_DATA_WIP_ORDER] 
-         WHERE START_DATE >= GETDATE() - 20 
-           AND order_status = 'Installed' 
-           AND Product_Category ='IP') as WIP
-    INNER JOIN
-        (SELECT SRVC_ORDER_UNIT, COUNT(*) as onnet_count
-         FROM [DASH].MEASURED_DATA
-         WHERE ACCESS_METHOD = 'On-Net'
-         GROUP BY SRVC_ORDER_UNIT) as MD_counts
-    ON 
-        UPPER(WIP.primary_order_item) = UPPER(MD_counts.SRVC_ORDER_UNIT)
-    LEFT JOIN 
-        (SELECT * 
-         FROM [SRVC_DLVR].[DASH].[WIP_ORDER_BLOCKER]  
-         WHERE blk_seq = 1) as WIP_BLOCKER
-    ON 
-        UPPER(WIP.primary_order_item) = UPPER(WIP_BLOCKER.PRIMARY_ORDER_ITEM)
-),
-
--- Common table expression (CTE) to store the results of the second query
-Query_Result_2 AS (
-    SELECT WIP.*, 
-           CASE 
-               WHEN MD_counts.onnet_count > 0 THEN 'Yes' 
-               ELSE 'No' 
-           END as 'onnet',
-           COALESCE(MD_counts.onnet_count, 0) as onnet_count
-    FROM 
-        (SELECT *, COUNT(*) OVER(PARTITION BY primary_order_item) as total_count
-         FROM [DASH].[VW_TASK_DATA_WIP_ORDER] 
-         WHERE START_DATE >= GETDATE() - 20 
-           AND order_status = 'Installed' 
-           AND Product_Category ='IP') as WIP
-    INNER JOIN
-        (SELECT SRVC_ORDER_UNIT, COUNT(*) as onnet_count
-         FROM [DASH].MEASURED_DATA
-         WHERE ACCESS_METHOD = 'On-Net'
-         GROUP BY SRVC_ORDER_UNIT) as MD_counts
-    ON 
-        UPPER(WIP.primary_order_item) = UPPER(MD_counts.SRVC_ORDER_UNIT)
-    LEFT JOIN 
-        (SELECT * 
-         FROM [SRVC_DLVR].[DASH].[WIP_ORDER_BLOCKER]  
-         WHERE blk_seq = 1) as WIP_BLOCKER
-    ON 
-        UPPER(WIP.primary_order_item) = UPPER(WIP_BLOCKER.PRIMARY_ORDER_ITEM)
-)
-
--- Comparison query
-sql_query = """SELECT 'Query_Result_1' AS Query_Source,
-       * 
-FROM Query_Result_1
-
-UNION ALL
-
-SELECT 'Query_Result_2' AS Query_Source,
-       *
-FROM Query_Result_2
-
-EXCEPT
-
-SELECT 'Query_Result_1' AS Query_Source,
-       * 
-FROM Query_Result_1
-
-INTERSECT
-
-SELECT 'Query_Result_2' AS Query_Source,
-       *
-FROM Query_Result_2;"""
-
-
-Unable to allocate 125. MiB for an array with shape (4, 4103347) and data type int64
-
+new_df = pd.DataFrame({"RUN_DT":RUN_DT,
+"primary_order_item":primary_order_item,
+'ECO_SOURCE':ECO_SOURCE,
+'Product_Category':Product_Category,
+'net_mrr':net_mrr,
+'order_status':order_status,
+'CUST_ORDER_NBR':CUST_ORDER_NBR,
+'SERV_ORDER_NBR':SERV_ORDER_NBR ,
+'SOU':SOU, 
+'SERVICE_ID':SERVICE_ID,
+'TASK_NAME':TASK_NAME,
+'TASK_STATUS':TASK_STATUS,
+'START_DATE':START_DATE,
+'END_DATE':END_DATE,
+'CUST_ORDER_SOURCE':CUST_ORDER_SOURCE,
+'DW_SOURCE_SYSTEM':DW_SOURCE_SYSTEM,
+'MODIFIED_DT':MODIFIED_DT,
+'PRODUCT_NAME':PRODUCT_NAME,
+'SERV_ORDER_TYP':SERV_ORDER_TYP,
+'SERV_ORDER_ACTION_TYP':SERV_ORDER_ACTION_TYP,
+'SERV_ORDER_STATUS':SERV_ORDER_STATUS,
+'CUST_COMMIT_DT':CUST_COMMIT_DT,
+'PRODUCT':PRODUCT,
+'CUST_REQST_DT':CUST_REQST_DT,
+'TASK_CREATE_DT':TASK_CREATE_DT,
+'A_COUNTRY_NAME':A_COUNTRY_NAME,
+'Z_COUNTRY_NAME':Z_COUNTRY_NAME,
+'TASK_DUE_DT':TASK_DUE_DT,
+'IS_NEW_VERSION':IS_NEW_VERSION,
+'SM_VERSION':SM_VERSION,
+# 'M_VERSION':M_VERSION,
+'onnet':ONNET,
+'onnet_count':ONNET_COUNT,
+'total_fallouts':IS_FALLOUT_TASK,
+"total_tasks":total_tasks,
+"total_products":total_products})
