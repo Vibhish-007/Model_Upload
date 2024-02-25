@@ -169,3 +169,19 @@ new_df = pd.DataFrame({"RUN_DT":RUN_DT,
 'total_fallouts':IS_FALLOUT_TASK,
 "total_tasks":total_tasks,
 "total_products":total_products})
+
+
+
+
+
+
+
+different_columns = df.columns[df.nunique() > 1]  # Columns with different values
+
+for col in different_columns:
+    unique_values = df[col].unique()
+    if len(unique_values) > 1:
+        print(f"Column '{col}' has different values:")
+        for val in unique_values:
+            products = df.loc[df[col] == val, 'Product'].unique()
+            print(f"  - Value '{val}' affects products: {', '.join(products)}")
