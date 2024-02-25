@@ -173,31 +173,45 @@ new_df = pd.DataFrame({"RUN_DT":RUN_DT,
 
 
 
-# Calculate correlation matrix
-correlation_matrix = df.corr()
+import pandas as pd
 
-# Print correlation matrix
-print("Correlation Matrix:")
-print(correlation_matrix)
+# Grouping by 'primary_order_item' and aggregating values
+grouped = df.groupby('primary_order_item').agg({
+    'RUN_DT': 'first',
+    'ECO_SOURCE': 'first',
+    'Product_Category': 'first',
+    'net_mrr': 'first',
+    'order_status': 'first',
+    'CUST_ORDER_NBR': 'first',
+    'SERV_ORDER_NBR': 'first',
+    'SOU': 'first',
+    'SERVICE_ID': 'first',
+    'TASK_NAME': lambda x: x.nunique(),
+    'TASK_STATUS': lambda x: (x.eq('Completed').sum() / len(x)) * 100 if len(x) > 0 else 0,
+    'START_DATE': 'first',
+    'END_DATE': 'first',
+    'CUST_ORDER_SOURCE': 'first',
+    'DW_SOURCE_SYSTEM': 'first',
+    'MODIFIED_DT': 'first',
+    'PRODUCT_NAME': lambda x: ','.join(x.dropna().unique()),
+    'SERV_ORDER_TYP': 'first',
+    'SERV_ORDER_ACTION_TYP': 'first',
+    'SERV_ORDER_STATUS': 'first',
+    'CUST_COMMIT_DT': 'first',
+    'PRODUCT': 'first',
+    'CUST_REQST_DT': 'first',
+    'TASK_CREATE_DT': 'first',
+    'A_COUNTRY_NAME': 'first',
+    'Z_COUNTRY_NAME': 'first',
+    'TASK_DUE_DT': 'last',
+    'IS_NEW_VERSION': 'first',
+    'SM_VERSION': 'first',
+    'onnet': 'first',
+    'onnet_count': 'first',
+    'IS_FALLOUT_TASK': lambda x: (x.sum() / len(x)) * 100 if len(x) > 0 else 0,
+    'total_tasks': 'size',
+    'total_products': lambda x: x.nunique()
+})
 
-# Visualize correlation matrix (optional)
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-plt.figure(figsize=(10, 8))
-sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
-plt.title("Correlation Matrix")
-plt.show()
-
-# Interpret correlation matrix
-print("Interpreting Correlation Matrix:")
-for column in correlation_matrix.columns:
-    correlated_columns = correlation_matrix.index[abs(correlation_matrix[column]) > 0.5].tolist()
-    correlated_columns.remove(column)  # Remove the column itself from correlated columns
-    if len(correlated_columns) > 0:
-        print(f"Column '{column}' has strong correlation with columns: {', '.join(correlated_columns)}")
-    else:
-        print(f"Column '{column}' does not have strong correlation with other columns.")
-
-
-
+# Creating the new DataFrame
+new_df = grouped.reset_index()
