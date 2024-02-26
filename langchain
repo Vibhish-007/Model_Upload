@@ -228,3 +228,19 @@ for i in df_6['WM_TASK_ID'].unique():
         pass
     
 print(len(z))
+
+
+
+# Convert unique values to sets
+df6_unique_ids = set(df_6['WM_TASK_ID'].unique())
+merged_unique_ids = set(merged_df['WM_TASK_ID'].unique())
+
+# Find the intersection of unique values
+z = df6_unique_ids.intersection(merged_unique_ids)
+
+# Print the common values
+for i in z:
+    print(i)
+
+print(len(z))
+
