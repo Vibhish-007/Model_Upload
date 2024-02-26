@@ -215,3 +215,16 @@ grouped = df.groupby('primary_order_item').agg({
 
 # Creating the new DataFrame
 new_df = grouped.reset_index()
+
+
+
+
+z = []
+for i in df_6['WM_TASK_ID'].unique():
+    if i in merged_df['WM_TASK_ID'].unique():
+        z.append(i)
+        print(i)
+    else:
+        pass
+    
+print(len(z))
