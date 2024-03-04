@@ -262,3 +262,11 @@ for i in final_df['PRIMARY_ORDER_ITEM'].unique():
         TOTAL_MILESTONES.append(v['TASK MILESTONE'].count())
         tc = sum(k in ['I_COMPLETED', 'Completed ', 'Complete', 'COMPLETE'] for k in sdf['TASK_STATUS'] )
         TASK_COMPLETION.extend([tc] * len(sdf))
+
+
+grouped_df = final_df.groupby(['PRIMARY_ORDER_ITEM', 'PRODUCT_NAME'])
+TOTAL_TASKS = grouped_df['TASK_NAME'].count()
+TOTAL_MILESTONES = grouped_df['TASK MILESTONE'].count()
+TOTAL_PRODUCTS = grouped_df.size()
+TOTAL_FALLOUTS = grouped_df['IS_FALLOUT_TASK'].sum()
+TASK_COMPLETION = grouped_df.apply(lambda x: sum(k in ['I_COMPLETED', 'Completed ', 'Complete', 'COMPLETE'] for k in x['TASK_STATUS']))
