@@ -244,3 +244,21 @@ for i in z:
 
 print(len(z))
 
+
+
+
+TOTAL_TASKS = []
+TOTAL_PRODUCTS = []
+TOTAL_MILESTONES = []
+TOTAL_FALLOUTS = []
+TASK_COMPLETION = []
+for i in final_df['PRIMARY_ORDER_ITEM'].unique():
+    sdf = final_df[final_df['PRIMARY_ORDER_ITEM'] == i]
+    for j in sdf['PRODUCT_NAME']:
+        v = sdf[sdf['PRODUCT_NAME'] == j ]
+        TOTAL_FALLOUTS.append(sdf['IS_FALLOUT_TASK'].sum())
+        TOTAL_PRODUCTS.append(v['PRODUCT_NAME'].count())
+        TOTAL_TASKS.append(v['TASK_NAME'].count())
+        TOTAL_MILESTONES.append(v['TASK MILESTONE'].count())
+        tc = sum(k in ['I_COMPLETED', 'Completed ', 'Complete', 'COMPLETE'] for k in sdf['TASK_STATUS'] )
+        TASK_COMPLETION.extend([tc] * len(sdf))
