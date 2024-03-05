@@ -265,13 +265,21 @@ for i in final_df['PRIMARY_ORDER_ITEM'].unique():
 
 
 import pandas as pd
+import numpy as np
 
 # Assuming you have a DataFrame named 'data' with your dataset
 # Replace 'dependent_variable' with the name of your dependent variable
 dependent_variable = 'target_variable'
 
+# List of columns where NaN values are considered important
+important_nan_columns = ['column1', 'column2']
+
+# Impute NaN values with a placeholder value (e.g., -999) for those columns
+data_imputed = data.copy()
+data_imputed[important_nan_columns] = data_imputed[important_nan_columns].fillna(-999)
+
 # Compute the correlation matrix
-correlation_matrix = data.corr()
+correlation_matrix = data_imputed.corr()
 
 # Get correlation of dependent variable with all other variables
 correlation_with_dependent = correlation_matrix[dependent_variable]
@@ -287,7 +295,5 @@ independent_variables = significant_correlation.index.tolist()
 independent_variables.remove(dependent_variable)
 
 # Split data into independent and dependent variables
-X = data[independent_variables]  # Independent variables
-y = data[dependent_variable]     # Dependent variable
-
-
+X = data_imputed[independent_variables]  # Independent variables
+y = data_imputed[dependent_variable]     # Dependent variable
