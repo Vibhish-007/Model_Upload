@@ -264,33 +264,30 @@ for i in final_df['PRIMARY_ORDER_ITEM'].unique():
         TASK_COMPLETION.extend([tc] * len(sdf))
 
 
-grouped_df = final_df.groupby(['PRIMARY_ORDER_ITEM', 'PRODUCT_NAME'])
-TOTAL_TASKS = grouped_df['TASK_NAME'].count()
-TOTAL_MILESTONES = grouped_df['TASK MILESTONE'].count()
-TOTAL_PRODUCTS = grouped_df.size()
-TOTAL_FALLOUTS = grouped_df['IS_FALLOUT_TASK'].sum()
-TASK_COMPLETION = grouped_df.apply(lambda x: sum(k in ['I_COMPLETED', 'Completed ', 'Complete', 'COMPLETE'] for k in x['TASK_STATUS']))
+import pandas as pd
 
+# Assuming you have a DataFrame named 'data' with your dataset
+# Replace 'dependent_variable' with the name of your dependent variable
+dependent_variable = 'target_variable'
 
-query_1 = """
-SELECT WIP.*,
-    CASE 
-        WHEN MD_counts.onnet_count > 0 THEN 'Yes' ELSE 'No' 
-    END as 'onnet',
-    COALESCE(MD_counts.onnet_count, 0) as onnet_count
-FROM 
-    (SELECT *, 
-        COUNT(*) OVER(PARTITION BY primary_order_item) as total_count
-    FROM [DASH].[VW_TASK_DATA_WIP_ORDER] 
-    WHERE START_DATE >= GETDATE() - 260 AND START_DATE < GETDATE() - 250 -- Changed date range to last 10 days before 250 days
-    AND order_status = 'Installed' AND Product_Category ='IP'
-    ) as WIP
-LEFT JOIN
-    (SELECT SRVC_ORDER_UNIT, COUNT(*) as onnet_count
-    FROM [DASH].MEASURED_DATA
-    WHERE ACCESS_METHOD = 'On-Net'
-    GROUP BY SRVC_ORDER_UNIT) as MD_counts
-ON 
-    WIP.primary_order_item = MD_counts.SRVC_ORDER_UNIT
-"""
+# Compute the correlation matrix
+correlation_matrix = data.corr()
+
+# Get correlation of dependent variable with all other variables
+correlation_with_dependent = correlation_matrix[dependent_variable]
+
+# Threshold for correlation strength
+threshold = 0.5  # Adjust as needed
+
+# Filter variables highly correlated with the dependent variable
+significant_correlation = correlation_with_dependent[abs(correlation_with_dependent) > threshold]
+
+# Extract variable names with significant correlation
+independent_variables = significant_correlation.index.tolist()
+independent_variables.remove(dependent_variable)
+
+# Split data into independent and dependent variables
+X = data[independent_variables]  # Independent variables
+y = data[dependent_variable]     # Dependent variable
+
 
