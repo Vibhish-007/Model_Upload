@@ -301,3 +301,21 @@ y = data_imputed[dependent_variable]     # Dependent variable
 
  'BLOCK_TYPE', 'CATEGORY', 'REASON', 'HOLD_TIME',
        'DESCRIPTION', 'BLK_SEQ', 'BLK_CREATED_DTTM', 'BLK_MODIFIED_DTTM'
+
+# Step 1: Calculate total number of tasks and order duration
+df['Total Tasks'] = df['TOTAL TASKS']
+df['Order Duration'] = (df['END DATE'] - df['START DATE']).dt.days
+
+# Step 2: Normalize values
+df['Normalized_Total_Tasks'] = (df['Total Tasks'] - df['Total Tasks'].min()) / (df['Total Tasks'].max() - df['Total Tasks'].min())
+df['Normalized_Order_Duration'] = (df['Order Duration'] - df['Order Duration'].min()) / (df['Order Duration'].max() - df['Order Duration'].min())
+
+# Step 3: Combine factors
+weight_total_tasks = 0.5  # Weight for total tasks
+weight_order_duration = 0.5  # Weight for order duration
+df['Order_Activity_Intensity'] = (weight_total_tasks * df['Normalized_Total_Tasks']) + (weight_order_duration * df['Normalized_Order_Duration'])
+
+# Step 4: Add the "Order Activity Intensity" column to the dataframe
+# Optionally, you can drop the intermediate columns used for calculation
+df.drop(['Total Tasks', 'Order Duration', 'Normalized_Total_Tasks', 'Normalized_Order_Duration'], axis=1, inplace=True)
+
