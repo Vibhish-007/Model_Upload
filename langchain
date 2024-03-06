@@ -319,3 +319,22 @@ df['Order_Activity_Intensity'] = (weight_total_tasks * df['Normalized_Total_Task
 # Optionally, you can drop the intermediate columns used for calculation
 df.drop(['Total Tasks', 'Order Duration', 'Normalized_Total_Tasks', 'Normalized_Order_Duration'], axis=1, inplace=True)
 
+
+
+training accuracy - 0.9924878094079754
+test accuracy - 0.9689728041002216
+mean squared error - 17.113885627530365
+mean abosolute error - 1.6384412955465586
+r square - 0.9629688787975816
+
+training accuracy - 0.9776850685327265
+test accuracy - 0.9768431179975037
+mean squared error - 12.77280200766607
+mean abosolute error - 1.1235911333529172
+r square - 0.9690718871956321
+
+training accuracy - 0.9855197375223229
+test accuracy - 0.9636193595773416
+mean squared error - 20.06672215113483
+mean abosolute error - 1.88195645644342
+r square - 0.9588830154515672
