@@ -338,3 +338,26 @@ test accuracy - 0.9636193595773416
 mean squared error - 20.06672215113483
 mean abosolute error - 1.88195645644342
 r square - 0.9588830154515672
+
+
+
+df_2.head(2)
+x = df_2.drop(["O_NO_OF_DAYS_TAKEN"],axis=1)
+y= df_2['O_NO_OF_DAYS_TAKEN']
+x['PRODUCT_NAME']=LabelEncoder().fit_transform(x['PRODUCT_NAME'])
+
+
+x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.2,shuffle = True)
+
+from sklearn.linear_model import Ridge, Lasso
+model_reg = Lasso(alpha=0.1).fit(x_train,y_train)
+pred = model_reg.predict(x_test)
+print(f"training accuracy - {model_reg.score(x_train,y_train)}")
+print(f"test accuracy - {model_reg.score(x_test,y_test)}")
+print(f"mean squared error - {mean_squared_error(pred,y_test)}")
+print(f"mean abosolute error - {mean_absolute_error(pred,y_test)}")
+print(f"r square - {r2_score(pred,y_test)}")
+plt.xlabel("predicted")
+plt.ylabel("actual")
+plt.title("actual vs predicted")
+sns.scatterplot(x=pred,y=y_test)
