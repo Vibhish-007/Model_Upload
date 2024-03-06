@@ -297,3 +297,7 @@ independent_variables.remove(dependent_variable)
 # Split data into independent and dependent variables
 X = data_imputed[independent_variables]  # Independent variables
 y = data_imputed[dependent_variable]     # Dependent variable
+
+
+ 'BLOCK_TYPE', 'CATEGORY', 'REASON', 'HOLD_TIME',
+       'DESCRIPTION', 'BLK_SEQ', 'BLK_CREATED_DTTM', 'BLK_MODIFIED_DTTM'
