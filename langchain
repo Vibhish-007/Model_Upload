@@ -361,3 +361,9 @@ plt.xlabel("predicted")
 plt.ylabel("actual")
 plt.title("actual vs predicted")
 sns.scatterplot(x=pred,y=y_test)
+
+training accuracy - 0.8271040020605858
+test accuracy - 0.7994369566481376
+mean squared error - 280.1247967749637
+mean abosolute error - 12.954296266700855
+r square - 0.7380866983778717
