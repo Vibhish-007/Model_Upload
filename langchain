@@ -363,6 +363,18 @@ plt.title("actual vs predicted")
 sns.scatterplot(x=pred,y=y_test)
 
 training accuracy - 0.8271040020605858
+
+from sklearn.linear_model import Ridge, Lasso
+model_reg_2 = joblib.load('/Workspace/Users/vibhish.ravikumar@lumen.com/time_pred_model.pkl')
+pred = model_reg_2.predict(x_test)
+print(f"test accuracy - {model_reg_2.score(x_test,y_test)}")
+print(f"mean squared error - {mean_squared_error(pred,y_test)}")
+print(f"mean abosolute error - {mean_absolute_error(pred,y_test)}")
+print(f"r square - {r2_score(pred,y_test)}")
+plt.xlabel("predicted")
+plt.ylabel("actual")
+plt.title("actual vs predicted")
+sns.scatterplot(x=pred,y=y_test)
 test accuracy - 0.7994369566481376
 mean squared error - 280.1247967749637
 mean abosolute error - 12.954296266700855
