@@ -379,3 +379,10 @@ test accuracy - 0.7994369566481376
 mean squared error - 280.1247967749637
 mean abosolute error - 12.954296266700855
 r square - 0.7380866983778717
+
+
+training accuracy - 0.6466765397971537
+test accuracy - 0.6735908143600162
+mean squared error - 192.89347878600734
+mean abosolute error - 5.0101752070117005
+r square - 0.39563733336741114
