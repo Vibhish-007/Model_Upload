@@ -19,6 +19,7 @@ docsearch=FAISS.from_documents(text_chunks,embeddings)
 docsearch.save_local(DB_FAISS)
 from langchain.llms import VertexAI
 llm=VertexAI(model_name='text-bison-32k',maximum_output_tokens=8000,tempearature=0.2,top_p=0.8,top_k=40,verbose=True)
+
 import sys
 qa = ConversationalRetrievalChain.from_llm(llm, retriever=docsearch.as_retriever())
 while True:
@@ -417,4 +418,27 @@ WHERE (WM.TASK_STATUS_CODE = 300)
 query_6 = """select * from  [SRVC_DLVR].[DASH].[WIP_ORDER_BLOCKER]  where blk_seq=1"""
 
 join query_5 and query_6 into single query_7 such that primary_order_item from [SRVC_DLVR].[DASH].[WIP_ORDER_BLOCKER] where blk_seq = 1 matches with the DERIVED_SOU and SERV_ORDER_NBR condition in the query_5
+
+query_7 = """SELECT WM.*
+FROM srvc_dlvr.dash.wm_task_data AS WM
+INNER JOIN [SRVC_DLVR].[DASH].[WIP_ORDER_BLOCKER] AS WB ON (
+    (WM.DERIVED_SOU = WB.primary_order_item AND WM.SERV_ORDER_NBR IS NULL)
+    OR
+    (WM.SERV_ORDER_NBR = WB.primary_order_item AND WM.DERIVED_SOU IS NULL)
+    OR
+    (WM.DERIVED_SOU = WB.primary_order_item AND WM.SERV_ORDER_NBR = WB.primary_order_item)
+)
+WHERE (WM.TASK_STATUS_CODE = 300)
+AND (
+    (WB.primary_order_item IN (
+        SELECT primary_order_item
+        FROM SRVC_DLVR.DASH.VW_TASK_DATA_WIP_ORDER
+    ) AND WM.SERV_ORDER_NBR IS NULL)
+    OR
+    (WB.primary_order_item IN (
+        SELECT primary_order_item
+        FROM SRVC_DLVR.DASH.VW_TASK_DATA_WIP_ORDER
+    ) AND WM.DERIVED_SOU IS NULL)
+)
+"""
 
