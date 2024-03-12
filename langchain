@@ -388,36 +388,33 @@ mean abosolute error - 5.0101752070117005
 r square - 0.39563733336741114
 
 
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 
-# Example DataFrame
-data = {
-    'ORDER_ACTIVITY_INTENSITY': [0.2, 0.4, 0.6, 0.8, 1.0],
-    'O_NO_OF_DAYS_TAKEN': [5, 7, 8, 10, 12],
-    'Category': ['A', 'A', 'B', 'B', 'B']  # Additional categorical feature
-}
-df = pd.DataFrame(data)
+query_5 = """
+SELECT WM.*
+FROM srvc_dlvr.dash.wm_task_data AS WM
+WHERE (WM.TASK_STATUS_CODE = 300)
+    AND (
+        (WM.DERIVED_SOU IN (
+            SELECT primary_order_item
+            FROM SRVC_DLVR.DASH.VW_TASK_DATA_WIP_ORDER
+        ) AND WM.SERV_ORDER_NBR IS NULL)
+        OR
+        (WM.SERV_ORDER_NBR IN (
+            SELECT primary_order_item
+            FROM SRVC_DLVR.DASH.VW_TASK_DATA_WIP_ORDER
+        ) AND WM.DERIVED_SOU IS NULL)
+    )
+    OR
+    (WM.DERIVED_SOU IN (
+        SELECT primary_order_item
+        FROM SRVC_DLVR.DASH.VW_TASK_DATA_WIP_ORDER
+    ) AND WM.SERV_ORDER_NBR IN (
+        SELECT primary_order_item
+        FROM SRVC_DLVR.DASH.VW_TASK_DATA_WIP_ORDER
+    ))
+"""
 
-# Scatter Plot with Hue (using seaborn)
-plt.figure(figsize=(8, 6))
-sns.scatterplot(data=df, x='ORDER_ACTIVITY_INTENSITY', y='O_NO_OF_DAYS_TAKEN', hue='Category', palette='viridis')
-plt.title('Scatter Plot of ORDER_ACTIVITY_INTENSITY vs O_NO_OF_DAYS_TAKEN (Colored by Category)')
-plt.xlabel('ORDER_ACTIVITY_INTENSITY')
-plt.ylabel('O_NO_OF_DAYS_TAKEN')
-plt.show()
+query_6 = """select * from  [SRVC_DLVR].[DASH].[WIP_ORDER_BLOCKER]  where blk_seq=1"""
 
-# Interaction Plot (using seaborn)
-plt.figure(figsize=(8, 6))
-sns.lineplot(data=df, x='ORDER_ACTIVITY_INTENSITY', y='O_NO_OF_DAYS_TAKEN', hue='Category', marker='o')
-plt.title('Interaction Plot of ORDER_ACTIVITY_INTENSITY vs O_NO_OF_DAYS_TAKEN (Grouped by Category)')
-plt.xlabel('ORDER_ACTIVITY_INTENSITY')
-plt.ylabel('O_NO_OF_DAYS_TAKEN')
-plt.show()
-
-# Pair Plot (using seaborn)
-sns.pairplot(df, hue='Category', palette='viridis')
-plt.suptitle('Pair Plot of ORDER_ACTIVITY_INTENSITY vs O_NO_OF_DAYS_TAKEN (Colored by Category)', y=1.02)
-plt.show()
+join query_5 and query_6 into single query_7 such that primary_order_item from [SRVC_DLVR].[DASH].[WIP_ORDER_BLOCKER] where blk_seq = 1 matches with the DERIVED_SOU and SERV_ORDER_NBR condition in the query_5
 
