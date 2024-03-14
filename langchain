@@ -442,3 +442,17 @@ AND (
 )
 """
 
+cat = ['PRODUCT_NAME',"ECO_SOURCE","TASK_SOURCE","TASK_STATUS","SERV_ORDER_TYP","SERV_ORDER_ACTION_TYP",
+                     "PAID_EXPEDITE","BLOCK_TYPE","CATEGORY","SUCC_TASK_NAME","NET_MRR_TYPE","SUCC_TASK_STATUS",
+                     "SERVICE_ORDER_STATUS","MODIFIED_DTTM",'TASK_STATUS_CODE',"VENDOR_BUILD_BLOCK_STATUS"]
+
+for i in cat:
+    new_col = f"cat_{i}"
+    uni = {}
+    uniq = df_build[i].unique()
+    for j in range(len(uniq)):
+        uni[uniq[j]] = j
+        df_build[new_col] = df_build[i].map(uni)
+
+df_build_1 = df_build.drop(cat,axis=1)
+df_build_1.head(n=2)
