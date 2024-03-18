@@ -648,3 +648,43 @@ y_pred_lasso = pipeline_lasso.predict(X_test)
 mse_lasso = mean_squared_error(y_test, y_pred_lasso)
 print("Mean Squared Error on Test Set (Lasso):", mse_lasso)
 
+
+# Scatter plot for RandomForestRegressor
+plt.figure(figsize=(8, 6))
+plt.scatter(y_pred_rf, y_test, alpha=0.5)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('RandomForestRegressor')
+plt.show()
+
+# Scatter plot for GradientBoostingRegressor
+plt.figure(figsize=(8, 6))
+plt.scatter(y_pred_gb, y_test, alpha=0.5)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('GradientBoostingRegressor')
+plt.show()
+
+# Scatter plot for SVR
+plt.figure(figsize=(8, 6))
+plt.scatter(y_pred_svr, y_test, alpha=0.5)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('SVR')
+plt.show()
+
+# Scatter plot for LinearRegression
+plt.figure(figsize=(8, 6))
+plt.scatter(y_pred_lr, y_test, alpha=0.5)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('LinearRegression')
+plt.show()
+
+# Scatter plot for Lasso
+plt.figure(figsize=(8, 6))
+plt.scatter(y_pred_lasso, y_test, alpha=0.5)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Lasso')
+plt.show()
