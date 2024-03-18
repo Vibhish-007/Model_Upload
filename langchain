@@ -498,3 +498,60 @@ pipeline.fit(df_build.drop('target_column', axis=1), df_build['target_column'])
 
 # Predict using the pipeline
 predictions = pipeline.predict(test_data)
+
+
+
+
+
+
+
+
+
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+
+# Assuming you have your data loaded into a DataFrame called 'data'
+# Split data into features and target variable
+X = data.drop('time_taken', axis=1)
+y = data['time_taken']
+
+# Split data into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Define a pipeline with StandardScaler and RandomForestRegressor
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('regressor', RandomForestRegressor())
+])
+
+# Define hyperparameters grid
+param_grid = {
+    'regressor__n_estimators': [50, 100, 150],
+    'regressor__max_depth': [None, 10, 20],
+    'regressor__min_samples_split': [2, 5, 10],
+    'regressor__min_samples_leaf': [1, 2, 4]
+}
+
+# Perform GridSearchCV with cross-validation
+grid_search = GridSearchCV(pipeline, param_grid, cv=5, scoring='neg_mean_squared_error', n_jobs=-1)
+grid_search.fit(X_train, y_train)
+
+# Best hyperparameters
+print("Best Hyperparameters:", grid_search.best_params_)
+
+# Use the best model obtained from grid search
+best_model = grid_search.best_estimator_
+
+# Fit the best model on the entire training data
+best_model.fit(X_train, y_train)
+
+# Evaluate the best model on the test set
+y_pred = best_model.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+print("Mean Squared Error on Test Set (Best Model):", mse)
+
