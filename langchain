@@ -543,12 +543,23 @@ print("Best Hyperparameters for RandomForestRegressor:", grid_search_rf.best_par
 best_model_rf = grid_search_rf.best_estimator_
 
 # Fit the best RandomForestRegressor model on the entire training data
-best_model_rf.fit(X_train, y_train)
+m1 = best_model_rf.fit(x_train, y_train)
 
 # Evaluate the best RandomForestRegressor model on the test set
-y_pred_rf = best_model_rf.predict(X_test)
+y_pred_rf = best_model_rf.predict(x_test)
 mse_rf = mean_squared_error(y_test, y_pred_rf)
+
+print(f"training accuracy for RF - {m1.score(x_train,y_train)}")
+print(f"test accuracy for RF - {m1.score(x_test,y_test)}")
 print("Mean Squared Error on Test Set (RandomForestRegressor):", mse_rf)
+
+# Scatter plot for RandomForestRegressor
+plt.figure(figsize=(8, 6))
+plt.scatter(y_pred_rf, y_test, alpha=0.5)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('RandomForestRegressor')
+plt.show()
 
 
 # Define a pipeline with StandardScaler and GradientBoostingRegressor
@@ -575,12 +586,23 @@ print("Best Hyperparameters for GradientBoostingRegressor:", grid_search_gb.best
 best_model_gb = grid_search_gb.best_estimator_
 
 # Fit the best GradientBoostingRegressor model on the entire training data
-best_model_gb.fit(X_train, y_train)
+m2 = best_model_gb.fit(x_train, y_train)
 
 # Evaluate the best GradientBoostingRegressor model on the test set
-y_pred_gb = best_model_gb.predict(X_test)
+y_pred_gb = best_model_gb.predict(x_test)
 mse_gb = mean_squared_error(y_test, y_pred_gb)
+
+print(f"training accuracy for GBR - {m2.score(x_train,y_train)}")
+print(f"test accuracy for GBR - {m2.score(x_test,y_test)}")
 print("Mean Squared Error on Test Set (GradientBoostingRegressor):", mse_gb)
+
+# Scatter plot for GradientBoostingRegressor
+plt.figure(figsize=(8, 6))
+plt.scatter(y_pred_gb, y_test, alpha=0.5)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('GradientBoostingRegressor')
+plt.show()
 
 
 # Define a pipeline with StandardScaler and SVR
@@ -607,13 +629,23 @@ print("Best Hyperparameters for SVR:", grid_search_svr.best_params_)
 best_model_svr = grid_search_svr.best_estimator_
 
 # Fit the best SVR model on the entire training data
-best_model_svr.fit(X_train, y_train)
+m3 = best_model_svr.fit(x_train, y_train)
 
 # Evaluate the best SVR model on the test set
-y_pred_svr = best_model_svr.predict(X_test)
+y_pred_svr = best_model_svr.predict(x_test)
 mse_svr = mean_squared_error(y_test, y_pred_svr)
+
+print(f"training accuracy for SVR - {m3.score(x_train,y_train)}")
+print(f"test accuracy for SVR - {m3.score(x_test,y_test)}")
 print("Mean Squared Error on Test Set (SVR):", mse_svr)
 
+# Scatter plot for SVR
+plt.figure(figsize=(8, 6))
+plt.scatter(y_pred_svr, y_test, alpha=0.5)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('SVR')
+plt.show()
 
 # Define a pipeline with StandardScaler and LinearRegression
 pipeline_lr = Pipeline([
@@ -624,12 +656,23 @@ pipeline_lr = Pipeline([
 # No hyperparameters for LinearRegression
 
 # Fit the LinearRegression model on the entire training data
-pipeline_lr.fit(X_train, y_train)
+m4 = pipeline_lr.fit(x_train, y_train)
 
 # Evaluate the LinearRegression model on the test set
 y_pred_lr = pipeline_lr.predict(X_test)
 mse_lr = mean_squared_error(y_test, y_pred_lr)
+
+print(f"training accuracy for LR - {m4.score(x_train,y_train)}")
+print(f"test accuracy for LR - {m4.score(x_test,y_test)}")
 print("Mean Squared Error on Test Set (LinearRegression):", mse_lr)
+
+# Scatter plot for LinearRegression
+plt.figure(figsize=(8, 6))
+plt.scatter(y_pred_lr, y_test, alpha=0.5)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('LinearRegression')
+plt.show()
 
 
 # Define a pipeline with StandardScaler and Lasso
@@ -641,45 +684,15 @@ pipeline_lasso = Pipeline([
 # No hyperparameters for Lasso
 
 # Fit the Lasso model on the entire training data
-pipeline_lasso.fit(X_train, y_train)
+m5 = pipeline_lasso.fit(x_train, y_train)
 
 # Evaluate the Lasso model on the test set
-y_pred_lasso = pipeline_lasso.predict(X_test)
+y_pred_lasso = pipeline_lasso.predict(x_test)
 mse_lasso = mean_squared_error(y_test, y_pred_lasso)
+
+print(f"training accuracy for Lasso - {m5.score(x_train,y_train)}")
+print(f"test accuracy for Lasso - {m5.score(x_test,y_test)}")
 print("Mean Squared Error on Test Set (Lasso):", mse_lasso)
-
-
-# Scatter plot for RandomForestRegressor
-plt.figure(figsize=(8, 6))
-plt.scatter(y_pred_rf, y_test, alpha=0.5)
-plt.xlabel('Predicted')
-plt.ylabel('Actual')
-plt.title('RandomForestRegressor')
-plt.show()
-
-# Scatter plot for GradientBoostingRegressor
-plt.figure(figsize=(8, 6))
-plt.scatter(y_pred_gb, y_test, alpha=0.5)
-plt.xlabel('Predicted')
-plt.ylabel('Actual')
-plt.title('GradientBoostingRegressor')
-plt.show()
-
-# Scatter plot for SVR
-plt.figure(figsize=(8, 6))
-plt.scatter(y_pred_svr, y_test, alpha=0.5)
-plt.xlabel('Predicted')
-plt.ylabel('Actual')
-plt.title('SVR')
-plt.show()
-
-# Scatter plot for LinearRegression
-plt.figure(figsize=(8, 6))
-plt.scatter(y_pred_lr, y_test, alpha=0.5)
-plt.xlabel('Predicted')
-plt.ylabel('Actual')
-plt.title('LinearRegression')
-plt.show()
 
 # Scatter plot for Lasso
 plt.figure(figsize=(8, 6))
