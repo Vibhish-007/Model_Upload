@@ -615,5 +615,36 @@ mse_svr = mean_squared_error(y_test, y_pred_svr)
 print("Mean Squared Error on Test Set (SVR):", mse_svr)
 
 
+# Define a pipeline with StandardScaler and LinearRegression
+pipeline_lr = Pipeline([
+    ('scaler', StandardScaler()),
+    ('regressor', LinearRegression())
+])
 
+# No hyperparameters for LinearRegression
+
+# Fit the LinearRegression model on the entire training data
+pipeline_lr.fit(X_train, y_train)
+
+# Evaluate the LinearRegression model on the test set
+y_pred_lr = pipeline_lr.predict(X_test)
+mse_lr = mean_squared_error(y_test, y_pred_lr)
+print("Mean Squared Error on Test Set (LinearRegression):", mse_lr)
+
+
+# Define a pipeline with StandardScaler and Lasso
+pipeline_lasso = Pipeline([
+    ('scaler', StandardScaler()),
+    ('regressor', Lasso(alpha=0.1))
+])
+
+# No hyperparameters for Lasso
+
+# Fit the Lasso model on the entire training data
+pipeline_lasso.fit(X_train, y_train)
+
+# Evaluate the Lasso model on the test set
+y_pred_lasso = pipeline_lasso.predict(X_test)
+mse_lasso = mean_squared_error(y_test, y_pred_lasso)
+print("Mean Squared Error on Test Set (Lasso):", mse_lasso)
 
