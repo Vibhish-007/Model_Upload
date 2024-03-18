@@ -501,6 +501,118 @@ predictions = pipeline.predict(test_data)
 
 
 
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.svm import SVR
+from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+
+# Assuming you have your data loaded into a DataFrame called 'data'
+# Split data into features and target variable
+X = data.drop('time_taken', axis=1)
+y = data['time_taken']
+
+# Split data into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Define a pipeline with StandardScaler and RandomForestRegressor
+pipeline_rf = Pipeline([
+    ('scaler', StandardScaler()),
+    ('regressor', RandomForestRegressor())
+])
+
+# Define hyperparameters grid for RandomForestRegressor
+param_grid_rf = {
+    'regressor__n_estimators': [50, 100, 150],
+    'regressor__max_depth': [None, 10, 20],
+    'regressor__min_samples_split': [2, 5, 10],
+    'regressor__min_samples_leaf': [1, 2, 4]
+}
+
+# Perform GridSearchCV with cross-validation for RandomForestRegressor
+grid_search_rf = GridSearchCV(pipeline_rf, param_grid_rf, cv=5, scoring='neg_mean_squared_error', n_jobs=-1)
+grid_search_rf.fit(X_train, y_train)
+
+# Best hyperparameters for RandomForestRegressor
+print("Best Hyperparameters for RandomForestRegressor:", grid_search_rf.best_params_)
+
+# Use the best RandomForestRegressor model obtained from grid search
+best_model_rf = grid_search_rf.best_estimator_
+
+# Fit the best RandomForestRegressor model on the entire training data
+best_model_rf.fit(X_train, y_train)
+
+# Evaluate the best RandomForestRegressor model on the test set
+y_pred_rf = best_model_rf.predict(X_test)
+mse_rf = mean_squared_error(y_test, y_pred_rf)
+print("Mean Squared Error on Test Set (RandomForestRegressor):", mse_rf)
+
+
+# Define a pipeline with StandardScaler and GradientBoostingRegressor
+pipeline_gb = Pipeline([
+    ('scaler', StandardScaler()),
+    ('regressor', GradientBoostingRegressor())
+])
+
+# Define hyperparameters grid for GradientBoostingRegressor
+param_grid_gb = {
+    'regressor__n_estimators': [50, 100, 150],
+    'regressor__learning_rate': [0.01, 0.1, 0.2],
+    'regressor__max_depth': [3, 5, 7]
+}
+
+# Perform GridSearchCV with cross-validation for GradientBoostingRegressor
+grid_search_gb = GridSearchCV(pipeline_gb, param_grid_gb, cv=5, scoring='neg_mean_squared_error', n_jobs=-1)
+grid_search_gb.fit(X_train, y_train)
+
+# Best hyperparameters for GradientBoostingRegressor
+print("Best Hyperparameters for GradientBoostingRegressor:", grid_search_gb.best_params_)
+
+# Use the best GradientBoostingRegressor model obtained from grid search
+best_model_gb = grid_search_gb.best_estimator_
+
+# Fit the best GradientBoostingRegressor model on the entire training data
+best_model_gb.fit(X_train, y_train)
+
+# Evaluate the best GradientBoostingRegressor model on the test set
+y_pred_gb = best_model_gb.predict(X_test)
+mse_gb = mean_squared_error(y_test, y_pred_gb)
+print("Mean Squared Error on Test Set (GradientBoostingRegressor):", mse_gb)
+
+
+# Define a pipeline with StandardScaler and SVR
+pipeline_svr = Pipeline([
+    ('scaler', StandardScaler()),
+    ('regressor', SVR())
+])
+
+# Define hyperparameters grid for SVR
+param_grid_svr = {
+    'regressor__C': [0.1, 1, 10],
+    'regressor__epsilon': [0.01, 0.1, 1],
+    'regressor__kernel': ['linear', 'rbf']
+}
+
+# Perform GridSearchCV with cross-validation for SVR
+grid_search_svr = GridSearchCV(pipeline_svr, param_grid_svr, cv=5, scoring='neg_mean_squared_error', n_jobs=-1)
+grid_search_svr.fit(X_train, y_train)
+
+# Best hyperparameters for SVR
+print("Best Hyperparameters for SVR:", grid_search_svr.best_params_)
+
+# Use the best SVR model obtained from grid search
+best_model_svr = grid_search_svr.best_estimator_
+
+# Fit the best SVR model on the entire training data
+best_model_svr.fit(X_train, y_train)
+
+# Evaluate the best SVR model on the test set
+y_pred_svr = best_model_svr.predict(X_test)
+mse_svr = mean_squared_error(y_test, y_pred_svr)
+print("Mean Squared Error on Test Set (SVR):", mse_svr)
 
 
 
