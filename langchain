@@ -933,10 +933,31 @@ tp_pw = dbutils.secrets.get("sdaiml", "tp-pass")
 jdbcDriver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
 jdbcUrl = f"jdbc:sqlserver://{jdbcHostname}:{jdbcPort};databaseName={jdbcDatabase};user={tp_user};password={tp_pw};encrypt=true;trustServerCertificate=true"
 
+from pyspark.sql import SparkSession
+
+# Create Spark session
+spark = SparkSession.builder \
+    .appName("Optimized Query") \
+    .getOrCreate()
+
+# Connection details
+jdbcHostname = "asfgdfsv"
+jdbcPort = 1233
+jdbcDatabase = "DFAGZE"
+tp_user = dbutils.secrets.get("sdaiml", "tp-user")
+tp_pw = dbutils.secrets.get("sdaiml", "tp-pass")
+jdbcDriver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+jdbcUrl = f"jdbc:sqlserver://{jdbcHostname}:{jdbcPort};databaseName={jdbcDatabase};user={tp_user};password={tp_pw};encrypt=true;trustServerCertificate=true"
+
 # Build query
 query = """
-WITH WIP_DATA AS (
-    SELECT WIP.*,
+SELECT DISTINCT 
+    WIP_DATA.*,
+    IP_MEASURED.*,
+    WIP_ORDER_BLOCKER.*,
+    WM_TASK_DATA.*
+FROM (
+    SELECT WIP.*, 
         CASE WHEN MD_counts.onnet_count > 0 THEN 'Yes' ELSE 'No' END as onnet,
         COALESCE(MD_counts.onnet_count, 0) as onnet_count
     FROM (
@@ -953,20 +974,12 @@ WITH WIP_DATA AS (
         GROUP BY SRVC_ORDER_UNIT
     ) as MD_counts
     ON WIP.primary_order_item = MD_counts.SRVC_ORDER_UNIT
-)
-
-SELECT DISTINCT 
-    WIP_DATA.*,
-    IP_MEASURED.*,
-    WIP_ORDER_BLOCKER.*,
-    WM_TASK_DATA.*,
-    MD.*
-FROM WIP_DATA
+) AS WIP_DATA
 LEFT JOIN DASH.MEASURED_DATA AS IP_MEASURED 
-    ON WIP_DATA.PRIMARY_ORDER_ITEM = IP_MEASURED.SRVC_ORDER_UNIT 
+    ON WIP_DATA.primary_order_item = IP_MEASURED.SRVC_ORDER_UNIT 
     AND IP_MEASURED.PRODUCT_CATEGORY = 'IP'
 LEFT JOIN SRVC_DLVR.DASH.WIP_ORDER_BLOCKER AS WIP_ORDER_BLOCKER 
-    ON WIP_DATA.PRIMARY_ORDER_ITEM = WIP_ORDER_BLOCKER.PRIMARY_ORDER_ITEM 
+    ON WIP_DATA.primary_order_item = WIP_ORDER_BLOCKER.PRIMARY_ORDER_ITEM 
     AND WIP_ORDER_BLOCKER.BLK_SEQ = 1 
     AND WIP_ORDER_BLOCKER.TASK_STATUS = 'Blocked'
 LEFT JOIN (
@@ -984,21 +997,21 @@ LEFT JOIN (
                 AND WM.SERV_ORDER_NBR IN (SELECT primary_order_item FROM SRVC_DLVR.DASH.VW_TASK_DATA_WIP_ORDER))
         )
 ) AS WM_TASK_DATA 
-ON WIP_DATA.PRIMARY_ORDER_ITEM = WM_TASK_DATA.PRIMARY_ORDER_ITEM
-LEFT JOIN (
-    SELECT * 
-    FROM SRVC_DLVR.DASH.WIP_ORDER_BLOCKER
-    WHERE blk_seq = 1 
-        AND TASK_STATUS = 'Blocked'
-) AS MD 
-ON WIP_DATA.PRIMARY_ORDER_ITEM = MD.PRIMARY_ORDER_ITEM
+ON WIP_DATA.primary_order_item = WM_TASK_DATA.PRIMARY_ORDER_ITEM
 """
 
-# Submit query and load results into pandas DataFrame
-df = spark.sql(query).toPandas()
+# Submit query and load results into spark DataFrame
+spark_df = spark.sql(query)
+
+# Convert spark DataFrame to pandas DataFrame
+df = spark_df.toPandas()
+
+# Stop Spark session
+spark.stop()
 
 # Display the resulting DataFrame
 print(df)
+
 
 
 code_2:
