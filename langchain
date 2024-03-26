@@ -1090,3 +1090,37 @@ print(top_features)
 # Merge selected columns with other relevant data
 # Perform merging based on your specific requirements
 
+
+
+import pandas as pd
+from sklearn.feature_selection import SelectKBest, f_classif
+
+# Load the dataset
+telecom_df = pd.read_csv('telecom_data.csv')
+
+# Assuming the target variable is named 'churn' (1 for churned, 0 for not churned)
+X = telecom_df.drop('churn', axis=1)  # Features
+y = telecom_df['churn']  # Target
+
+# Define the number of features to select in each batch
+batch_size = 10
+
+# Initialize an empty list to store selected features
+selected_features = []
+
+# Perform incremental feature selection in batches
+for i in range(0, X.shape[1], batch_size):
+    # Select features in the current batch using SelectKBest
+    selector = SelectKBest(score_func=f_classif, k=batch_size)
+    selector.fit(X.iloc[:, i:i+batch_size], y)
+    
+    # Get the indices of the selected features in the current batch
+    selected_indices = selector.get_support(indices=True)
+    
+    # Get the names of the selected features and add them to the list
+    selected_features.extend(X.columns[i:i+batch_size][selected_indices])
+
+# Print selected features
+print("Selected Features:")
+print(selected_features)
+
