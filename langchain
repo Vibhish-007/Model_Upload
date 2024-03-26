@@ -1058,3 +1058,35 @@ merge_df = pd.merge(
     ],
     how="left",
 )
+
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+
+# Load and prepare data (replace 'data.csv' with your dataset)
+data = pd.read_csv('data.csv')
+X = data.drop('target_variable', axis=1)  # Input features
+y = data['target_variable']  # Target variable
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train Random Forest model
+rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_model.fit(X_train, y_train)
+
+# Analyze feature importances
+feature_importances = pd.DataFrame({'Feature': X.columns, 'Importance': rf_model.feature_importances_})
+feature_importances = feature_importances.sort_values(by='Importance', ascending=False)
+print("Feature Importances:")
+print(feature_importances)
+
+# Select top features for merging
+top_features = feature_importances['Feature'].head(5).tolist()  # Select top 5 features
+print("Top Features for Merging:")
+print(top_features)
+
+# Merge selected columns with other relevant data
+# Perform merging based on your specific requirements
+
