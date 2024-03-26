@@ -994,6 +994,13 @@ telecom_df = pd.read_csv('telecom_data.csv')
 X = telecom_df.drop('churn', axis=1)  # Features
 y = telecom_df['churn']  # Target
 
+# Identify categorical and datetime features
+categorical_features = X.select_dtypes(include=['object']).columns.tolist()
+datetime_features = X.select_dtypes(include=['datetime64']).columns.tolist()
+
+# Convert categorical features to dummy variables
+X = pd.get_dummies(X, columns=categorical_features)
+
 # Define the number of features to select
 k_best_features = 5
 
