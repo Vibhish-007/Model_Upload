@@ -1151,3 +1151,58 @@ print("Final Features Selected:")
 print(final_features)
 
 
+import pandas as pd
+from sklearn.feature_selection import SelectKBest, f_classif
+from scipy.stats import pearsonr
+import sqlite3
+
+# Establish a connection to your SQL database
+conn = sqlite3.connect('your_database.db')
+
+# Define your SQL query
+query = 'SELECT * FROM your_table'
+
+# Chunk size for batch processing
+chunk_size = 1000  # Adjust the chunk size based on available memory
+
+# Initialize an empty set to store selected features
+selected_features = set()
+
+# Loop through chunks of data from the database
+for chunk in pd.read_sql_query(query, conn, chunksize=chunk_size):
+    X = chunk.drop('churn', axis=1)  # Features
+    y = chunk['churn']  # Target
+
+    # Define the number of features to select
+    k_best_features = 5
+
+    # 1. Statistical Methods: SelectKBest
+    selector = SelectKBest(score_func=f_classif, k=k_best_features)
+    selector.fit(X, y)
+
+    # Get the indices of the selected features
+    selected_features_indices = selector.get_support(indices=True)
+
+    # Get the names of the selected features
+    selected_features_skbest = X.columns[selected_features_indices]
+
+    # 2. Correlation Methods: Pearson Correlation
+    correlation_scores = []
+    for column in selected_features_skbest:
+        correlation_score = pearsonr(X[column], y)[0]
+        correlation_scores.append((column, correlation_score))
+
+    # Sort features based on correlation score
+    sorted_features = sorted(correlation_scores, key=lambda x: abs(x[1]), reverse=True)
+
+    # Get top features based on correlation score
+    top_correlated_features = [feature[0] for feature in sorted_features[:k_best_features]]
+
+    # Add top features to selected_features set
+    selected_features.update(top_correlated_features)
+
+# Close the database connection
+conn.close()
+
+print("Final Features Selected:")
+print(selected_features)
