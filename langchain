@@ -921,3 +921,55 @@ merge_df = pd.merge(
 HOLD_TIME = date the block should be removed/updated for that particular block
 
 
+
+
+import pandas as pd
+import numpy as np
+from sklearn.feature_selection import SelectKBest, f_classif
+from scipy.stats import pearsonr
+
+# Load the dataset
+telecom_df = pd.read_csv('telecom_data.csv')
+
+# Assuming the target variable is named 'churn' (1 for churned, 0 for not churned)
+X = telecom_df.drop('churn', axis=1)  # Features
+y = telecom_df['churn']  # Target
+
+# Define the number of features to select
+k_best_features = 5
+
+# 1. Statistical Methods: SelectKBest
+selector = SelectKBest(score_func=f_classif, k=k_best_features)
+selector.fit(X, y)
+
+# Get the indices of the selected features
+selected_features_indices = selector.get_support(indices=True)
+
+# Get the names of the selected features
+selected_features_skbest = X.columns[selected_features_indices]
+
+# 2. Correlation Methods: Pearson Correlation
+correlation_scores = []
+for column in X.columns:
+    correlation_score = pearsonr(X[column], y)[0]
+    correlation_scores.append((column, correlation_score))
+
+# Sort features based on correlation score
+sorted_features = sorted(correlation_scores, key=lambda x: abs(x[1]), reverse=True)
+
+# Get top features based on correlation score
+top_correlated_features = [feature[0] for feature in sorted_features[:k_best_features]]
+
+# Comparison: Counterattacking disadvantages
+# Disadvantage 1: SelectKBest assumes linear relationships
+# Disadvantage 2: Pearson Correlation only captures linear relationships
+
+# Mitigation: Consider non-linear relationships using SelectKBest
+# Advantages: SelectKBest considers non-linear relationships
+# Disadvantages: May discard potentially useful features that are not significant by themselves
+
+# Considering the above, we'll select features from SelectKBest
+best_features = selected_features_skbest
+
+print("Best Features Selected:")
+print(best_features)
