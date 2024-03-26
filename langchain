@@ -979,3 +979,49 @@ best_features = selected_features_skbest
 
 print("Best Features Selected:")
 print(best_features)
+
+
+
+import pandas as pd
+import numpy as np
+from sklearn.feature_selection import SelectKBest, f_classif
+from scipy.stats import pearsonr
+
+# Load the dataset
+telecom_df = pd.read_csv('telecom_data.csv')
+
+# Assuming the target variable is named 'churn' (1 for churned, 0 for not churned)
+X = telecom_df.drop('churn', axis=1)  # Features
+y = telecom_df['churn']  # Target
+
+# Define the number of features to select
+k_best_features = 5
+
+# 1. Statistical Methods: SelectKBest
+selector = SelectKBest(score_func=f_classif, k=k_best_features)
+selector.fit(X, y)
+
+# Get the indices of the selected features
+selected_features_indices = selector.get_support(indices=True)
+
+# Get the names of the selected features
+selected_features_skbest = X.columns[selected_features_indices]
+
+# 2. Correlation Methods: Pearson Correlation
+correlation_scores = []
+for column in selected_features_skbest:
+    correlation_score = pearsonr(X[column], y)[0]
+    correlation_scores.append((column, correlation_score))
+
+# Sort features based on correlation score
+sorted_features = sorted(correlation_scores, key=lambda x: abs(x[1]), reverse=True)
+
+# Get top features based on correlation score
+top_correlated_features = [feature[0] for feature in sorted_features[:k_best_features]]
+
+# Combine results: Features selected by both SelectKBest and strong correlation
+final_features = list(set(selected_features_skbest) & set(top_correlated_features))
+
+print("Final Features Selected:")
+print(final_features)
+
