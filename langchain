@@ -1032,3 +1032,29 @@ final_features = list(set(selected_features_skbest) & set(top_correlated_feature
 print("Final Features Selected:")
 print(final_features)
 
+
+
+ip_measured_df = measured_df[measured_df["PRODUCT_CATEGORY"] == "IP"]
+
+ip_measured_df.rename(columns={"SRVC_ORDER_UNIT": "PRIMARY_ORDER_ITEM"}, inplace=True)
+ip_measured_df.columns = ip_measured_df.columns.str.upper()
+df_1.columns = df_1.columns.str.upper()
+df_6.columns = df_6.columns.str.upper()
+df_raw = df_1.merge(ip_measured_df, on="PRIMARY_ORDER_ITEM", how="left")
+df_5.rename(columns={"DERIVED_SOU": "PRIMARY_ORDER_ITEM"}, inplace=True)
+df_7 = df_6.merge(df_5, on=["PRIMARY_ORDER_ITEM", "TASK_NAME"], how="left")
+df_7 = df_7.drop_duplicates(subset=["PRIMARY_ORDER_ITEM", "TASK_NAME"], keep="last")
+df_7["TASK_STATUS"] = df_7["TASK_STATUS_y"].combine_first(df_7["TASK_STATUS_x"])
+df_7.drop(["TASK_STATUS_x", "TASK_STATUS_y"], axis=1, inplace=True)
+merge_df = pd.merge(
+    df_raw,
+    df_7,
+    on=[
+        "PRIMARY_ORDER_ITEM",
+        "TASK_NAME",
+        "TASK_STATUS",
+        "SERV_ORDER_NBR",
+        "ORDER_TYPE",
+    ],
+    how="left",
+)
