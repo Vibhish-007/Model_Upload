@@ -1094,6 +1094,7 @@ print(top_features)
 
 import pandas as pd
 from sklearn.feature_selection import SelectKBest, f_classif
+from scipy.stats import pearsonr
 
 # Load the dataset
 telecom_df = pd.read_csv('telecom_data.csv')
@@ -1102,6 +1103,16 @@ telecom_df = pd.read_csv('telecom_data.csv')
 X = telecom_df.drop('churn', axis=1)  # Features
 y = telecom_df['churn']  # Target
 
+# Identify categorical and datetime features
+categorical_features = X.select_dtypes(include=['object']).columns.tolist()
+datetime_features = X.select_dtypes(include=['datetime64']).columns.tolist()
+
+# Drop categorical and datetime features for feature selection
+X_for_selection = X.drop(categorical_features + datetime_features, axis=1)
+
+# Define the number of features to select
+k_best_features = 5
+
 # Define the number of features to select in each batch
 batch_size = 10
 
@@ -1109,18 +1120,34 @@ batch_size = 10
 selected_features = []
 
 # Perform incremental feature selection in batches
-for i in range(0, X.shape[1], batch_size):
+for i in range(0, X_for_selection.shape[1], batch_size):
     # Select features in the current batch using SelectKBest
     selector = SelectKBest(score_func=f_classif, k=batch_size)
-    selector.fit(X.iloc[:, i:i+batch_size], y)
+    selector.fit(X_for_selection.iloc[:, i:i+batch_size], y)
     
     # Get the indices of the selected features in the current batch
     selected_indices = selector.get_support(indices=True)
     
     # Get the names of the selected features and add them to the list
-    selected_features.extend(X.columns[i:i+batch_size][selected_indices])
+    selected_features.extend(X_for_selection.columns[i:i+batch_size][selected_indices])
 
-# Print selected features
-print("Selected Features:")
-print(selected_features)
+# 2. Correlation Methods: Pearson Correlation
+correlation_scores = []
+for column in selected_features:
+    correlation_score = pearsonr(X[column], y)[0]
+    correlation_scores.append((column, correlation_score))
+
+# Sort features based on correlation score
+sorted_features = sorted(correlation_scores, key=lambda x: abs(x[1]), reverse=True)
+
+# Get top features based on correlation score
+top_correlated_features = [feature[0] for feature in sorted_features[:k_best_features]]
+
+# Combine results: Features selected by both SelectKBest and strong correlation
+final_features = list(set(selected_features) & set(top_correlated_features))
+
+# Print final features selected
+print("Final Features Selected:")
+print(final_features)
+
 
