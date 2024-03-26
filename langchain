@@ -935,23 +935,29 @@ telecom_df = pd.read_csv('telecom_data.csv')
 X = telecom_df.drop('churn', axis=1)  # Features
 y = telecom_df['churn']  # Target
 
+# Identify datetime features
+datetime_features = X.select_dtypes(include=['datetime64']).columns.tolist()
+
+# Drop datetime features for feature selection (can be handled differently based on the use case)
+X_for_selection = X.drop(datetime_features, axis=1)
+
 # Define the number of features to select
 k_best_features = 5
 
 # 1. Statistical Methods: SelectKBest
 selector = SelectKBest(score_func=f_classif, k=k_best_features)
-selector.fit(X, y)
+selector.fit(X_for_selection, y)
 
 # Get the indices of the selected features
 selected_features_indices = selector.get_support(indices=True)
 
 # Get the names of the selected features
-selected_features_skbest = X.columns[selected_features_indices]
+selected_features_skbest = X_for_selection.columns[selected_features_indices]
 
 # 2. Correlation Methods: Pearson Correlation
 correlation_scores = []
-for column in X.columns:
-    correlation_score = pearsonr(X[column], y)[0]
+for column in X_for_selection.columns:
+    correlation_score = pearsonr(X_for_selection[column], y)[0]
     correlation_scores.append((column, correlation_score))
 
 # Sort features based on correlation score
