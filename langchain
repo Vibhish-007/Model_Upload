@@ -1254,3 +1254,8 @@ cluster_1_cols = combined_df[combined_df['Cluster'] == 1].drop('Cluster', axis=1
 merged_df = pd.merge(df1, cluster_0_cols, left_index=True, right_index=True, how='left', suffixes=('_df1', '_cluster_0'))
 
 print(merged_df)
+
+
+for chunk_start in range(0, len(df), chunk_size):
+    chunk_end = min(chunk_start + chunk_size, len(df))
+    chunk = df.iloc[chunk_start:chunk_end]
