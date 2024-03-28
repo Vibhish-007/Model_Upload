@@ -1304,3 +1304,6 @@ df['Average_Block_Duration'] = df['Order_ID'].map(avg_block_duration)
 
 df['Block_Occurred'] = (~df[block_columns].isnull()).any(axis=1).astype(int)
 
+Cross-Validation Score for Lasso: 0.6201486471328771
+Individual Scores for Lasso: [ 0.80814664  0.79567208  0.76497076  0.73030723  0.76454256  0.52008666
+ -0.04268541]
