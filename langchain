@@ -1300,3 +1300,7 @@ else:
 
 avg_block_duration = df.groupby('Order_ID')['Block_Duration'].mean()
 df['Average_Block_Duration'] = df['Order_ID'].map(avg_block_duration)
+
+
+df['Block_Occurred'] = (~df[block_columns].isnull()).any(axis=1).astype(int)
+
