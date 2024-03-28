@@ -1267,4 +1267,19 @@ for column in df.columns:
 df = df.drop(columns=[col for col in data.keys()])
 
 
+# Check for missing values in BLK_CREATED_DTTM and BLK_MODIFIED_DTTM columns
+missing_created = df['BLK_CREATED_DTTM'].isnull()
+missing_modified = df['BLK_MODIFIED_DTTM'].isnull()
+
+# Handle missing values
+if missing_created.any() or missing_modified.any():
+    # Fill missing values with zero
+    df['Block_Duration'] = np.nan  # or any other default value
+else:
+    # Calculate Block_Duration when no missing values
+    df['Block_Duration'] = (df['BLK_MODIFIED_DTTM'] - df['BLK_CREATED_DTTM']).dt.total_seconds() / 3600
+
+# Drop rows with missing values if needed
+# df.dropna(subset=['Block_Duration'], inplace=True)
+
 
