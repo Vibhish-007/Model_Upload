@@ -1282,4 +1282,19 @@ else:
 # Drop rows with missing values if needed
 # df.dropna(subset=['Block_Duration'], inplace=True)
 
+import numpy as np
+
+# Check for missing values in BLK_CREATED_DTTM column
+missing_created = df['BLK_CREATED_DTTM'].isnull()
+
+# Handle missing values
+if missing_created.any():
+    # Fill missing values with zero or any other default value
+    df['Time_Since_Last_Block'] = np.nan  # or any other default value
+else:
+    # Calculate Time_Since_Last_Block when no missing values
+    df['Time_Since_Last_Block'] = df.groupby('Order_ID')['BLK_CREATED_DTTM'].diff().dt.total_seconds() / 3600
+
+# Drop rows with missing values if needed
+# df.dropna(subset=['Time_Since_Last_Block'], inplace=True)
 
