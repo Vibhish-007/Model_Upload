@@ -1307,3 +1307,22 @@ df['Block_Occurred'] = (~df[block_columns].isnull()).any(axis=1).astype(int)
 Cross-Validation Score for Lasso: 0.6201486471328771
 Individual Scores for Lasso: [ 0.80814664  0.79567208  0.76497076  0.73030723  0.76454256  0.52008666
  -0.04268541]
+
+# Test Data
+test_data = ['class1', 'class2', 'class3', 'unseen_class']
+
+# Check for Unseen Labels
+unseen_labels = set(test_data) - set(label_encoder.classes_)
+
+# Handle Unseen Labels
+if unseen_labels:
+    print("Unseen labels detected:", unseen_labels)
+    # Option 1: Omit Unseen Labels
+    test_data_filtered = [label for label in test_data if label not in unseen_labels]
+    # Option 2: Map Unseen Labels to a Default Category
+    # test_data_filtered = ['default_category' if label in unseen_labels else label for label in test_data]
+else:
+    test_data_filtered = test_data
+
+# Apply Label Encoding
+test_data_encoded = label_encoder.transform(test_data_filtered)
