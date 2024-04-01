@@ -1358,3 +1358,18 @@ Individual Scores for SVR: [0.77792554 0.73812861 0.88625739 0.79185593 0.777808
        'CCD_START_DIFF', 'CRD_START_DIFF', 'RQST_TO_CMIT_TIME', 'TOTAL_BLOCK',
        'TASK_DEPENDENCY_RATIO', 'BLOCK_DURATION', 'TIME_SINCE_LAST_BLOCK',
        'AVERAGE_BLOCK_DURATION'
+
+
+def detect_outliers(column):
+    Q1 = column.quantile(0.25)
+    Q3 = column.quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    outliers = (column < lower_bound) | (column > upper_bound)
+    return outliers
+
+# Count outliers for each column
+outliers_count = df.apply(detect_outliers).sum()
+print("Number of outliers in each column:")
+print(outliers_count)
