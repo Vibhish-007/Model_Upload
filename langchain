@@ -1326,3 +1326,14 @@ else:
 
 # Apply Label Encoding
 test_data_encoded = label_encoder.transform(test_data_filtered)
+
+
+
+Best Hyperparameters for SVR: {'regressor__C': 0.1, 'regressor__epsilon': 0.1, 'regressor__kernel': 'linear'}
+training accuracy for SVR - 0.852764517503959
+test accuracy for SVR - 0.7801783183852709
+Mean Squared Error on Test Set (SVR): 1476.2900898703588
+
+Cross-Validation Score for SVR: 0.7421284955833444
+Individual Scores for SVR: [0.77792554 0.73812861 0.88625739 0.79185593 0.77780825 0.79177723
+ 0.43114651]
