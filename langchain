@@ -1373,3 +1373,5 @@ def detect_outliers(column):
 outliers_count = df.apply(detect_outliers).sum()
 print("Number of outliers in each column:")
 print(outliers_count)
+
+HOLD_TIME = date the block should be removed/updated for that particular block
