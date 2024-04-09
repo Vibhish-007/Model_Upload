@@ -1382,3 +1382,33 @@ HOLD_TIME = date the block should be removed/updated for that particular block
        'cat_SERV_ORDER_STATUS', 'cat_A_STATE_NAME', 'cat_ACCESS_METHOD',
        'BLOCK_TYPE', 'SERVICE_ORDER_STATUS', 'BLOCK_DURATION',
        'TIME_SINCE_LAST_BLOCK', 'AVERAGE_BLOCK_DURATION'
+
+
+
+
+"ECO_SOURCE": "first",
+        "NET_MRR": "first",
+        "ORDER_STATUS": "first",
+        "TASK_SOURCE": "first",
+        "CUST_ORDER_NBR": "first",
+        "SERV_ORDER_NBR": "first",
+        "SOU": "first",
+        "TASK_STATUS": "first",
+        "SERV_ORDER_TYP": "first",
+        "SERV_ORDER_ACTION_TYP": "first",
+        "SERV_ORDER_STATUS": "first",
+        "TASK_DERIVED_STATUS": "first",
+        "IS_FALLOUT_TASK": "sum",
+       
+       
+        'MODIFIED_DT':"first",
+        'WB_TASK_NAME_imp':"first",
+        'WB_TASK_STATUS_imp':"first",
+        'BLOCK_TYPE_imp':"first",
+        'CATEGORY_imp':"first",
+        'REASON_imp':"first",
+        'HOLD_TIME':"first",
+        'SUCC_TASK_NAME_imp':"first",
+        'SUCC_TASK_STATUS_imp':"first",
+        'BLK_SEQ':"first",
+        'task_time_diff':"first"
