@@ -1375,3 +1375,10 @@ print("Number of outliers in each column:")
 print(outliers_count)
 
 HOLD_TIME = date the block should be removed/updated for that particular block
+
+'TOTAL_FALLOUTS', 'TOTAL_TASK', 'TIME_TAKEN', 'CCD_START_DIFF',
+       'RQST_TO_CMIT_TIME', 'TOTAL_BLOCK', 'TASK_DEPENDENCY_RATIO',
+       'BLOCK_OCCURED', 'cat_SERV_ORDER_TYP', 'cat_SERV_ORDER_ACTION_TYP',
+       'cat_SERV_ORDER_STATUS', 'cat_A_STATE_NAME', 'cat_ACCESS_METHOD',
+       'BLOCK_TYPE', 'SERVICE_ORDER_STATUS', 'BLOCK_DURATION',
+       'TIME_SINCE_LAST_BLOCK', 'AVERAGE_BLOCK_DURATION'
