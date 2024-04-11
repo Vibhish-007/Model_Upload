@@ -1266,6 +1266,25 @@ for column in df.columns:
 # Optionally, drop the original timestamp columns if not needed
 df = df.drop(columns=[col for col in data.keys()])
 
+from pandasai.connectors import SQLConnector
+
+sql_connector = SQLConnector(
+    config={
+        "dialect": "sqlite",
+        "driver": "pysqlite",
+        "host": "localhost",
+        "port": 3306,
+        "database": "mydb",
+        "username": "root",
+        "password": "root",
+        "table": "loans",
+        "where": [
+            # this is optional and filters the data to
+            # reduce the size of the dataframe
+            ["loan_status", "=", "PAIDOFF"],
+        ],
+    }
+)
 
 # Check for missing values in BLK_CREATED_DTTM and BLK_MODIFIED_DTTM columns
 missing_created = df['BLK_CREATED_DTTM'].isnull()
