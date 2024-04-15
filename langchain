@@ -1502,3 +1502,6 @@ elif len(selected_features) < len(model_features):
 
 # Now selected_features contains the adjusted list of features with the correct number of features
 print("Adjusted list of features:", selected_features)
+
+
+ (cx_Oracle.DatabaseError) DPI-1047: Cannot locate a 64-bit Oracle Client library: "libclntsh.so: cannot open shared object file: No such file or directory
