@@ -1476,3 +1476,29 @@ for i in cat_filtered:
         df_build[new_col] = lb.fit_transform(df_build[i])
     else:
         pass
+
+
+import pickle
+
+# Load the model from the pickle file
+with open("your_model.pkl", "rb") as f:
+    model = pickle.load(f)
+
+# Assuming model_features is a list of 17 features expected by the model
+model_features = model.get_feature_names_out()
+
+# Assuming selected_features is a list of 16 features that were selected
+selected_features = ['feature1', 'feature2', 'feature3', 'feature4', 'feature5',
+                     'feature6', 'feature7', 'feature8', 'feature9', 'feature10',
+                     'feature11', 'feature12', 'feature13', 'feature14', 'feature15']
+
+# Check if the number of features selected matches the number of features expected by the model
+if len(selected_features) == len(model_features):
+    print("Number of features matches the model's expectations.")
+elif len(selected_features) < len(model_features):
+    # Remove excess features to match the number of features expected by the model
+    selected_features = [feature for feature in selected_features if feature in model_features]
+    print("Removed excess features to match the number of features expected by the model.")
+
+# Now selected_features contains the adjusted list of features with the correct number of features
+print("Adjusted list of features:", selected_features)
