@@ -1452,3 +1452,27 @@ sql_connector = SQLConnector(
         ],
     }
 )
+
+
+with open(
+    "/Workspace/Users/vibhish.ravikumar@lumen.com/Label_Enc_Time_V3_one_yr.pkl", "rb"
+) as f:
+    encoders = pickle.load(f)
+
+unseen_labels = set(cat) - set(encoders.keys())
+
+if unseen_labels:
+    print("Unseen labels detected:", unseen_labels)
+    cat_filtered = [label for label in cat if label not in unseen_labels]
+    # cat_filtered = ['default_category' if label in unseen_labels else label for label in cat]
+else:
+    cat_filtered = cat
+
+
+for i in cat_filtered:
+    if i in encoders:
+        new_col = f"cat_{i}"
+        lb = encoders[i]
+        df_build[new_col] = lb.fit_transform(df_build[i])
+    else:
+        pass
