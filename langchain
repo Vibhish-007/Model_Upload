@@ -1519,3 +1519,79 @@ To change this limit, set the config variable
 Current values:
 ServerApp.iopub_data_rate_limit=1000000.0 (bytes/sec)
 ServerApp.rate_limit_window=3.0 (secs)
+
+
+[1:32 AM] Rajan, Vignesh
+async def store_user_details(user:User):
+    try:
+        payload = {
+            #user.name is cuid
+        "cuId": user.name,
+            #user.email is password
+        "password": user.email
+        }
+        response = requests.post(url=CONFIG['SSO']['url'],json=payload,verify=False)
+        if response.status_code==200:
+            message=response.json()
+            print(message)
+            if message['msg']=='User logged-in successfully!':
+                return {"message": "Logged in successfully", "status":"success"}
+            else:
+                raise HTTPException(status_code=401,detail=message['msg'])
+    except requests.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Failed to authenticate user: {str(e)}")
+[1:32 AM] Rajan, Vignesh
+try{
+    const response=await fetch('/store_user_details', {
+       
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ name: userName, email: userEmail })
+});
+if (!response.ok){
+    throw new Error('unable to authenticate user.');
+}
+ 
+//.then(response => response.json())
+const data=await response.json();
+if (data.status==='success'){
+   
+    const successPopup = document.createElement('div');
+    successPopup.innerHTML = `<div style="background-color: green; color: white; padding: 10px;
+     border-radius: 5px; display: flex; align-items: center; justify-content: center;
+      position: absolute; top: 20px; right: 20px;">
+                                <span style="margin-right: 5px;">&#10003;</span>
+                                <span>Login Successful</span>
+                              </div>`;
+    document.body.appendChild(successPopup);
+ 
+   
+    setTimeout(() => {
+        document.body.removeChild(successPopup);
+ 
+        const chatContainer = document.getElementById('chatbot-body');
+        chatContainer.innerHTML =`
+            <div class="message slide-in">Hi ${userName} ! Thanks for joining <br> Please choose one to proceed further.</div>
+            <div class="group-container" style="flex-wrap: wrap; justify-content: center;">
+                <div class="custom-button" style="width: 35%;" onclick="handlePrompt('Report')">Report</div>
+                <div class="custom-button" style="width: 35%;" onclick="handlePrompt('Application')">Application</div>
+                <div class="custom-button"style="width: 35%;" onclick="handlePrompt('Insights')">Insights</div>
+                <div class="custom-button" style="width: 35%;" onclick="handlePrompt('Solutions')">Solutions</div>
+                <div class="custom-button" style="width: 35%;" onclick="handlePrompt('Requirements')">Requirements</div>
+                <div class="custom-button" style="width: 35%;" onclick="handlePrompt('Query')">Others</div>
+            </div>
+           
+        `;
+    }, 2000);
+ 
+}       else{
+alert(data.message);
+}
+ 
+}catch (error){
+console.error('Error:', error.message);
+alert("An error occurred. Please try again later. ")
+}
+}
