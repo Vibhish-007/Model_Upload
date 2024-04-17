@@ -1,0 +1,182 @@
+df = pd.read_excel(r"/home/AD17526/Denesh/ML_Automation/Tech Assist Call - Jan'23 MTD (1).xlsx",sheet_name="TA - Jan'23 MTD")
+data = df[df['L3'] != None]
+data = data.dropna(subset=["L3"])
+data = data[(data['L3'] == 'POD Activation/Update/Inquiry')|(data['L3'] == '360 Wifi/Plume Reg')|
+           (data['L3'] == 'Linked ONT')|(data['L3'] == 'SmartNID Registration')|
+           (data['L3'] == 'Verify/Inquiry Facility')|(data['L3'] == 'Company Req')|
+           (data['L3'] == 'Registered Casa')|(data['L3'] == 'VCI Issue')|
+           (data['L3'] == 'Cust Requested')|(data['L3'] == 'Update Ticket Status')|
+           (data['L3'] == 'ONT Authentication')]
+
+target_keys_list = list(data['L3'].unique())
+target_keys = {}
+for idx in range(len(target_keys_list)):
+    val = target_keys_list[idx]
+    target_keys[val] = idx
+
+
+#clean raw data, taking notes as the data:
+nlp = spacy.load('en_core_web_lg-3.6.0/en_core_web_lg/en_core_web_lg-3.6.0')
+special_characters = ['.','-', ',','?','/',  '(', ')', ':',  '#', '=', '&', ';', '\xa0', '+', '~', '@', ']', '\\', '_', '!', '*', '>', '$', '|', '"', '[', '%', '{', '}']
+for idx in special_characters:
+    punc = string.punctuation + idx
+    
+def text_preprocess(text):
+    text = text.lower()
+    matches = datefinder.find_dates(text,source=True)
+    try:
+        matched_string = [match_string for decoded_date,match_string in matches]
+    except:
+        matched_string = []
+    if len(matched_string) > 0:
+        for date_string_idx in matched_string: 
+            text = text.replace(date_string_idx,'').strip()
+    else:
+        pass
+    doc = nlp(text)
+    auto_tagged = [{"text":ent.text,"tag":ent.label_} for ent in doc.ents]
+    for idx in auto_tagged: 
+        if idx['tag'] != 'ORG':
+            text = text.replace(idx["text"],'').strip()
+        else:
+            pass
+        
+    split_text = text.split()
+    new_text = ''
+    for word in split_text:
+        sub_word = ''
+        for char in word:
+            if char not in punc:
+                sub_word+=char
+            else:
+                sub_word+=' '
+        new_text = new_text + ' '+sub_word
+    text = new_text.replace('  ',' ').strip()
+    doc = nlp(text)
+    text = [ent.lemma_ for ent in doc]
+    new_stopwords = [' ','i', 'me', 'my', 'myself', 'we', 'our', 'ours',
+                     'ourselves', 'you', "you're", "you've", "you'll", 
+                     "you'd", 'your', 'yours', 'yourself', 'yourselves', 
+                     'he', 'him', 'his', 'himself', 'she', "she's", 'her', 
+                     'hers', 'herself', 'it', "it's", 'its', 'itself',
+                     'they', 'them', 'their', 'theirs', 'themselves',
+                     'what', 'which', 'who', 'whom', 'this', 'that',
+                     "that'll", 'these', 'those', 'am', 'is', 'are', 
+                     'was', 'were', 'be', 'been', 'being', 'have', 'has',
+                     'had', 'having', 'do', 'does', 'did', 'doing', 'a',
+                     'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as',
+                     'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about',
+                     'against', 'between', 'into', 'through', 'during', 'before',
+                     'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in',
+                     'out', 'on', 'off', 'over', 'under', 'again', 'further', 
+                     'then', 'once', 'here', 'there', 'when', 'where', 
+                     'why', 'how', 'all', 'any', 'both', 'each', 'few', 
+                     'more', 'most', 'other', 'some', 'such', 'no', 'nor', 
+                     'only', 'own', 'same', 'so', 'than', 'too', 'very', 's',
+                     't', 'can', 'will', 'just', 'don', "don't", 'should', 
+                     "should've", 'now', 'd', 'll', 'm', 'o', 're', 've', 'y',
+                     'ain', 'aren', "aren't", 'couldn', "couldn't", 'didn', "didn't",
+                     'doesn', "doesn't", 'hadn', "hadn't", 'hasn', "hasn't", 'haven', "haven't",
+                     'isn', "isn't", 'ma', 'mightn', "mightn't", 'mustn', "mustn't",
+                     'needn', "needn't", 'shan', "shan't", 'shouldn', "shouldn't", 'wasn',
+                     "wasn't", 'weren', "weren't", 'won', "won't", 'wouldn', "wouldn't",
+                    "tech","tt","ttt"]
+    text = [char for char in text if char not in new_stopwords]
+    text_ = []
+    for char in text:
+        if char.isalpha() == True:
+            text_.append(char)
+        else:
+            pass
+    text = ' '.join(text_)
+    return text
+
+
+
+#get glove embeddings:
+embeded_dict = {}
+with open(r"/home/AD17526/Denesh/ML_Automation/glove.6B.300d.txt","rb") as f:
+    for line in f:
+        value = line.split()
+        word = value[0]
+        vector = np.asarray(value[1:],"float32")
+        embeded_dict[word] = vector
+
+glove_wiki = embeded_dict
+glove_wiki.keys()
+new_glove = {}
+for key,val in glove_wiki.items():
+    new_key = str(key)
+    new_glove[new_key] = val
+    
+def get_glove(text,size,vectors,aggregation='mean'):
+    vec = np.zeros(size).reshape((1,size))
+    count = 0
+    for word in text.split():
+        vect_word = f"b'{word}'"
+        try:
+            vec+=vectors[vect_word].reshape((1,size))
+            count+=1
+        except KeyError:
+            continue
+    if aggregation == 'mean':
+        if count!=0:
+            vec/=count
+        return vec
+
+model_path = "tech_assist_classifier.pkl"
+with open(model_path,"rb") as f:
+    model = pickle.load(f)
+
+try:
+    yesterday = str(date.today() - timedelta(days=1))
+    query=f"""select CaseNumber,Notes__c,Description,CreatedDate,AccountId,Case_Type__c,Subtype__c,RecordTypeId,Origin,ClosedDate from Case where  Case_Type__c='Tech Assist' and CreatedDate > {yesterday}T00:00:00.000-06:00 and CreatedDate < {yesterday}T23:59:59.999-06:00"""
+    # CaseRecordType,CaseType,SubType,Status
+    test_df=pd.DataFrame((sf.query_all(query))['records']).drop(columns=['attributes'])
+    test_df.head(n=2)
+except KeyError:
+    yesterday = str(date.today() - timedelta(days=2))
+    query=f"""select CaseNumber,Notes__c,Description,CreatedDate,AccountId,Case_Type__c,Subtype__c,RecordTypeId,Origin,ClosedDate from Case where  Case_Type__c='Tech Assist' and CreatedDate > {yesterday}T00:00:00.000-06:00 and CreatedDate < {yesterday}T23:59:59.999-06:00"""
+    # CaseRecordType,CaseType,SubType,Status
+    test_df=pd.DataFrame((sf.query_all(query))['records']).drop(columns=['attributes'])
+    test_df.head(n=2)
+
+test_df['Notes'] = test_df['Notes__c']
+test_df = test_df.dropna(subset=['Notes'])
+print(test_df.shape)
+tqdm.pandas(desc = 'text cleaning in progress')
+test_df['clean_text'] = test_df['Notes'].progress_apply(lambda x: text_preprocess(x))
+x_t = list(test_df['clean_text'])
+x_t = np.concatenate([get_glove(z,300,new_glove,'mean') for z in x_t])
+x_t = pd.DataFrame(x_t)
+pred_n = model.predict(x_t)
+test_df['pred_class'] = pred_n
+target_keys
+reverse_target = {}
+for key,value in target_keys.items():
+    reverse_target[value] = key
+test_df['prediction'] = test_df['pred_class'].map(reverse_target)
+
+
+def get_cluster_groups(df, yesterday):
+    save_file_as = f"TECH_Assist_issue_categorization_{yesterday}.xlsx"
+    df.to_excel(save_file_as,index = False)
+    df['cluster_name'] = df['prediction']
+    cluster_counts = df['cluster_name'].value_counts().reset_index()
+    cluster_counts.columns = ['cluster_name', 'count']
+    first_descriptions = df.groupby('cluster_name')['Notes'].first().reset_index()
+    result = pd.merge(cluster_counts, first_descriptions, on='cluster_name')
+    result = result.sort_values('count', ascending=False)
+    print(result)
+    workbook = openpyxl.load_workbook(save_file_as)
+    sheet = workbook.create_sheet('Top Categories')
+    for row in dataframe_to_rows(result):
+        sheet.append(row)
+    workbook.save(save_file_as)
+    for idx in result['cluster_name'][0:10]:
+        df_ = df[df['cluster_name'] == idx]
+        desc = create_worksheet_description(save_file_as,idx,df_)
+    print(f"result successfully saved at {save_file_as}")
+    return workbook, save_file_as
+
+
