@@ -240,3 +240,6 @@ os.environ["LD_LIBRARY_PATH"] = os.pathsep.join([oracle_instant_client_path, os.
 
 sudo sh -c "echo /opt/oracle/instantclient_21_1 > /etc/ld.so.conf.d/oracle-instantclient.conf"
 sudo ldconfig
+
+DatabaseError: (cx_Oracle.DatabaseError) ORA-12170: TNS:Connect timeout occurred
+(Background on this error at: https://sqlalche.me/e/20/4xp6)
