@@ -235,3 +235,5 @@ def process_tech_assist_cases(df: pd.DataFrame):
         pass
 
     return process_cases(df)
+
+os.environ["LD_LIBRARY_PATH"] = os.pathsep.join([oracle_instant_client_path, os.environ.get("LD_LIBRARY_PATH", "")])
