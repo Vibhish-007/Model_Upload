@@ -368,3 +368,4 @@ response = agent.chat("Can you summarize these telephonic conversations?")
 
 IOException: IO Error: Could not set lock on file "/home/jupyter/techbuddy/csv_chat/cache/cache_db_0.9.db": Conflicting lock is held in /opt/conda/bin/python3.10 (PID 19771)
 Agent.add_skills() got an unexpected keyword argument 'llm'
+google.api_core.exceptions.ResourceExhausted: 429 Unable to submit request because the service is temporarily out of capacity. Try again later.
