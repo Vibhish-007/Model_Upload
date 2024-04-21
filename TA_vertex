@@ -365,3 +365,5 @@ agent.add_skills(summarize_conversations)
 
 # Chat with the agent
 response = agent.chat("Can you summarize these telephonic conversations?")
+
+IOException: IO Error: Could not set lock on file "/home/jupyter/techbuddy/csv_chat/cache/cache_db_0.9.db": Conflicting lock is held in /opt/conda/bin/python3.10 (PID 19771)
