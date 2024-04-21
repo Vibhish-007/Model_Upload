@@ -294,3 +294,74 @@ for i in df['llm_summary']:
 df['summary'] = summary
 df['context'] = context
 df['issue_type'] = issue_type
+
+@skill
+def summarize_conversations(df, llm):
+    """
+    Summarizes telephonic conversations in a DataFrame and identifies the context and issue type.
+    Args:
+        df (pd.DataFrame): DataFrame containing telephonic conversations.
+        llm: Language model for summarization.
+    Returns:
+        pd.DataFrame: DataFrame with added columns for summary, context, and issue type.
+    """
+    template = """The following is a telephonic conversation between a telecommunication agent and a customer.
+    Summarize the given conversation in one paragraph which contains the context of the conversation and identifies 
+    the issue that the customer has spoken about.
+    Also identify the context and the issue for which the customer has called the agent, the issue should 
+    strictly be of one or two words only..
+    {question}
+
+    The response should strictly be in the following format:
+    Summary:
+    Context:
+    Issue Type:
+    """
+    prompt = PromptTemplate.from_template(template)
+    summary_chain = prompt | llm | StrOutputParser()
+
+    response_list = []
+    error_convos = []
+    for convo in tqdm(df['Conversation']):
+        try:
+            response = summary_chain.invoke({"question": convo})
+            response_list.append(response)
+        except:
+            response_list.append(None)
+            error_convos.append(convo)
+
+    df['llm_summary'] = response_list
+    df.dropna(subset=["llm_summary"], inplace=True)
+
+    summary = []
+    context = []
+    issue_type = []
+    for i in df['llm_summary']:
+        try:
+            splits = i.replace("\n\n", "\cd").split("\cd")
+            cd = splits[2]
+        except:
+            splits = i.split("\n")
+        summary.append(splits[0])
+        context.append(splits[1])
+        issue_type.append(splits[2])
+
+    df['summary'] = summary
+    df['context'] = context
+    df['issue_type'] = issue_type
+
+    return df
+
+
+# Example usage with Agent
+# Load the DataFrame and language model
+df = pd.read_excel("transcripts_0416 (1) 1.xlsx")
+df = df[0:1000]
+llm = VertexAI(model="gemini-1.5-pro-preview-0409", top_k=5, top_p=0.9, temperature=0.2, max_output_tokens=2048)
+
+# Create agent and add the skill
+agent = Agent([df], memory_size=10)
+agent.add_skills(summarize_conversations)
+
+# Chat with the agent
+response = agent.chat("Can you summarize these telephonic conversations?")
