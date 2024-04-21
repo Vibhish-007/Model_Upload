@@ -243,3 +243,54 @@ sudo ldconfig
 
 DatabaseError: (cx_Oracle.DatabaseError) ORA-12170: TNS:Connect timeout occurred
 (Background on this error at: https://sqlalche.me/e/20/4xp6)
+
+
+
+df = pd.read_excel("transcripts_0416 (1) 1.xlsx")
+df = df[0:1000]
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser,JsonOutputParser
+from langchain_google_vertexai import VertexAI,VertexAIEmbeddings
+llm = VertexAI(model = "gemini-1.5-pro-preview-0409",top_k=5,top_p=0.9,temperature=0.2,max_output_tokens=2048)
+template = """The following is a telephonic conversation between a telecommunication agent and a customer.
+Summarize the given conversation in one paragraph which contains the context of the conversation and identifies 
+the issue that the customer has spoken about.
+Also identify the context and the issue for which the customer has called the agent,the issue should 
+strictly be of one or two words only..
+{question}
+
+The response should strictly be in the following format:
+Summary:
+Context:
+Issue Type:
+"""
+prompt = PromptTemplate.from_template(template)
+summary_chain = prompt | llm | StrOutputParser()
+from tqdm import tqdm
+response_list = []
+error_convos = []
+for convo in tqdm(df['Conversation']):
+    try:
+        response = summary_chain.invoke({"question":convo})
+        response_list.append(response)
+    except:
+        response_list.append(None)
+        error_convos.append(convo)
+df['llm_summary'] = response_list
+df.dropna(subset="llm_summary",inplace=True)
+summary = []
+context = []
+issue_type = []
+for i in df['llm_summary']:
+    try:
+        splits = i.replace("\n\n","\cd").split("\cd")
+        cd = splits[2]
+    except:
+        splits = i.split("\n")
+    summary.append(splits[0])
+    context.append(splits[1])
+    issue_type.append(splits[2])
+
+df['summary'] = summary
+df['context'] = context
+df['issue_type'] = issue_type
