@@ -520,4 +520,4 @@ summarized_texts = summarize_conversations(df)
 # Generate content
 generate(summarized_texts)
 
-
+HTTPSConnectionPool(host='openaipublic.blob.core.windows.net', port=443): Max retries exceeded with url: /encodings/cl100k_base.tiktoken (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x7f8cf9a6ad40>, 'Connection to openaipublic.blob.core.windows.net timed out. (connect timeout=None)'))
