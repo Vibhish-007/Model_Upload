@@ -369,3 +369,81 @@ response = agent.chat("Can you summarize these telephonic conversations?")
 IOException: IO Error: Could not set lock on file "/home/jupyter/techbuddy/csv_chat/cache/cache_db_0.9.db": Conflicting lock is held in /opt/conda/bin/python3.10 (PID 19771)
 Agent.add_skills() got an unexpected keyword argument 'llm'
 google.api_core.exceptions.ResourceExhausted: 429 Unable to submit request because the service is temporarily out of capacity. Try again later.
+
+import base64
+import vertexai
+from vertexai.generative_models import GenerativeModel, Part, FinishReason
+import vertexai.preview.generative_models as generative_models
+
+def generate():
+  vertexai.init(project="prj-adapt-ai-dev-001", location="us-west1")
+  model = GenerativeModel("gemini-1.0-pro-002")
+  responses = model.generate_content(
+      [text1],
+      generation_config=generation_config,
+      safety_settings=safety_settings,
+      stream=True,
+  )
+
+  for response in responses:
+    print(response.text, end="")
+
+text1 = """Summarize the following conversation from the Agent\'s perspective:
+Agent: Thank you for calling Google Cloud Support. How may I assist you today?
+
+Customer: Hi, I am trying to create a Google Cloud account and use the free credits, but I am not sure where to start.
+
+Agent: Sure, I can definitely help you with that. May I know if you already have a Google account?
+
+Customer: Yes, I do.
+
+Agent: Great. The first step would be to sign in to the Google Cloud Console. Do you know how to access it?
+
+Customer: No, I don\'t. Can you guide me?
+
+Agent: Sure. Please go to console.cloud.google.com and sign in with your Google account credentials. Once you are signed in, you will be directed to the Google Cloud Console dashboard.
+
+Customer: Okay, I have signed in. What should I do next?
+
+Agent: Now, you\'ll need to create a project. A project is a collection of resources, such as Compute Engine instances and Cloud Storage buckets. To create a project, click on the \"Projects\" tab and then click on the \"Create project\" button. You\'ll need to provide a name for your project and then select a region. Once you\'ve created your project, you\'ll be able to start using the free credits.
+
+Customer: Great, I\'ve created my project. Now what?
+
+Agent: Now, you\'ll need to enable the free trial. To do this, click on the \"Billing\" tab and then click on the \"Enable free trial\" button. You\'ll need to provide your credit card information and then click on the \"Submit\" button.
+
+Customer: Alright, I think I can do that.
+
+Agent: Excellent. You\'ve now successfully created a Google Cloud account. You can start using the free credits that are available by clicking on the \"Credits\" tab.
+
+Customer: That sounds easy enough. How much free credit do I get?
+
+Agent: You\'ll receive $300 worth of free credit that you can use on any Google Cloud services for up to 12 months.
+
+Customer: Is there anything else I should know?
+
+Agent: Yes, just be sure to keep an eye on your usage during your free trial period. Once your credits are used up, you\'ll start being charged for any additional usage. But don\'t worry, you\'ll receive notifications when you\'re approaching your credit limit.
+
+Customer: Thank you so much for your help!
+
+Agent: You\'re welcome. Is there anything else I can help you with today?
+
+Customer: No, that\'s all. Thank you again!
+
+Agent: You\'re welcome. Have a great day and enjoy using Google Cloud!"""
+
+generation_config = {
+    "max_output_tokens": 1024,
+    "temperature": 0.2,
+    "top_p": 0.8,
+}
+
+safety_settings = {
+    generative_models.HarmCategory.HARM_CATEGORY_HATE_SPEECH: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    generative_models.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    generative_models.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    generative_models.HarmCategory.HARM_CATEGORY_HARASSMENT: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+}
+
+generate()
+
+
