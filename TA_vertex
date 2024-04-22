@@ -521,3 +521,54 @@ summarized_texts = summarize_conversations(df)
 generate(summarized_texts)
 
 HTTPSConnectionPool(host='openaipublic.blob.core.windows.net', port=443): Max retries exceeded with url: /encodings/cl100k_base.tiktoken (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x7f8cf9a6ad40>, 'Connection to openaipublic.blob.core.windows.net timed out. (connect timeout=None)'))
+
+def rag_qa_sys(question):     """QA Rag sys"""          rag_prompt = """You are chatting with a conversational AI named TechBuddy that can answer questions based on the context provided. \     The AI is designed to provide relevant responses to user question.\     Question:     {question}     Context:     {context}"""     rag_qa_prompt = PromptTemplate.from_template(rag_prompt)     rag_chain = ({"context":retriever | format_docs , "question": RunnablePassthrough()}                  | rag_qa_prompt                  | llm                  | StrOutputParser())     rag_chain_from_docs = (         RunnablePassthrough.assign(context=(lambda x: format_docs(x["context"])))         | rag_qa_prompt         | llm         | StrOutputParser()     )     rag_chain_from_source = RunnableParallel({"context":retriever,"question":RunnablePassthrough()}).assign(answer=rag_chain_from_docs)     resp = rag_chain_from_source.invoke({"question":question})     return resp Take the input df(issue_type) for question and return the answer in the same df by creating a new column sol_fix, if the answer is not available return none
+#rag definition:
+
+@tool
+
+def rag_qa_sys(question):
+
+    """QA Rag sys"""
+
+    rag_prompt = """You are chatting with a conversational AI named TechBuddy that can answer questions based on the context provided. \
+
+    The AI is designed to provide relevant responses to user question.\
+
+    Question:
+
+    {question}
+ 
+    Context:
+
+    {context}"""
+ 
+ake the input df(issue_type) for question and return the answer in the same df by creating a new column sol_fix, if the answer is not available return none
+ 
+    rag_qa_prompt = PromptTemplate.from_template(rag_prompt)
+ 
+    rag_chain = ({"context":retriever | format_docs , "question": RunnablePassthrough()} 
+
+                 | rag_qa_prompt 
+
+                 | llm 
+
+                 | StrOutputParser())
+ 
+    rag_chain_from_docs = (
+
+        RunnablePassthrough.assign(context=(lambda x: format_docs(x["context"])))
+
+        | rag_qa_prompt
+
+        | llm
+
+        | StrOutputParser()
+
+    )
+
+    rag_chain_from_source = RunnableParallel({"context":retriever,"question":RunnablePassthrough()}).assign(answer=rag_chain_from_docs)
+
+    resp = rag_chain_from_source.invoke({"question":question})
+
+    return resp
