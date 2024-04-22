@@ -572,3 +572,121 @@ ake the input df(issue_type) for question and return the answer in the same df b
     resp = rag_chain_from_source.invoke({"question":question})
 
     return resp
+
+import pandas as pd
+from langchain.chains import ConversationChain
+from langchain.chat_models import ChatVertexAI
+from langchain.memory import ConversationBufferMemory
+
+class BPETokenizer:
+    def __init__(self, vocab_size=1000):
+        self.vocab_size = vocab_size
+        self.vocab = {}
+    
+    def train(self, corpus):
+        # Count pairs of characters
+        pairs = {}
+        for word in corpus:
+            for i in range(len(word) - 1):
+                pair = word[i:i+2]
+                if pair in pairs:
+                    pairs[pair] += 1
+                else:
+                    pairs[pair] = 1
+        
+        # Merge most frequent pairs until vocabulary size is reached
+        for _ in range(self.vocab_size):
+            max_pair = max(pairs, key=pairs.get)
+            self._merge_pair(max_pair)
+            del pairs[max_pair]
+    
+    def _merge_pair(self, pair):
+        # Merge the most frequent pair into the vocabulary
+        new_token = ''.join(pair)
+        self.vocab[new_token] = len(self.vocab)
+        
+        # Replace the pair with the new token in the corpus
+        for i, word in enumerate(corpus):
+            corpus[i] = word.replace(pair, new_token)
+    
+    def tokenize(self, text):
+        tokens = []
+        i = 0
+        while i < len(text):
+            found_token = False
+            for token in self.vocab:
+                if text[i:i+len(token)] == token:
+                    tokens.append(token)
+                    i += len(token)
+                    found_token = True
+                    break
+            if not found_token:
+                tokens.append(text[i])
+                i += 1
+        return tokens
+
+def summarize_conversations(df):
+    def summarize_text(text, recursion_level=0):
+        # Split text into chunks of 4096 tokens
+        texts = []
+        text_tokens = tokenizer.tokenize(text)
+        for i in range(0, len(text_tokens), 4096):
+            texts.append(''.join(text_tokens[i:i+4096]))
+
+        llm = ChatVertexAI(max_output_tokens=1024)
+        conversation = ConversationChain(llm=llm, memory=ConversationBufferMemory())
+
+        summarized_text = ""
+        for i, text_segment in enumerate(texts):
+            response = conversation.predict(input="Write a summary of the following text:\n\n" + text_segment)
+            summarized_text += response + "\n\n"
+        if len(texts) == 1:
+            return summarized_text
+        else:
+            return summarize_text(summarized_text, recursion_level=recursion_level+1)
+
+    # Read conversations from DataFrame
+    conversations = df['conversations'].tolist()
+
+    summarized_conversations = []
+    for conversation in conversations:
+        summarized_conversations.append(summarize_text(conversation))
+
+    return summarized_conversations
+
+def generate(summarized_texts):
+    model = GenerativeModel("gemini-1.0-pro-002")
+    for text in summarized_texts:
+        responses = model.generate_content(
+            [text],
+            generation_config={
+                "max_output_tokens": 1024,
+                "temperature": 0.2,
+                "top_p": 0.8,
+            },
+            safety_settings={
+                generative_models.HarmCategory.HARM_CATEGORY_HATE_SPEECH: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                generative_models.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                generative_models.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                generative_models.HarmCategory.HARM_CATEGORY_HARASSMENT: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            },
+            stream=True,
+        )
+
+        for response in responses:
+            print(response.text, end="")
+
+# Load tokenizer
+tokenizer = BPETokenizer(vocab_size=1000)
+corpus = ["low", "lower", "newest", "widest"]
+tokenizer.train(corpus)
+
+# Read DataFrame
+df = pd.read_excel("transcripts_0416 (1) 1.xlsx")
+
+# Summarize conversations
+summarized_texts = summarize_conversations(df)
+
+# Generate content
+generate(summarized_texts)
+
