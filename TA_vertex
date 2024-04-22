@@ -447,3 +447,77 @@ safety_settings = {
 generate()
 
 
+
+
+import pandas as pd
+from langchain.chains import ConversationChain
+from langchain.chat_models import ChatVertexAI
+from langchain.memory import ConversationBufferMemory
+import tiktoken
+from vertexai.generative_models import GenerativeModel, Part, FinishReason
+import vertexai.preview.generative_models as generative_models
+
+encoder = tiktoken.get_encoding("cl100k_base")
+
+def summarize_conversations(df):
+    def summarize_text(text, recursion_level=0):
+        # Split text into chunks of 4096 tokens
+        texts = []
+        text_tokens = encoder.encode(text)
+        for i in range(0, len(text_tokens), 4096):
+            texts.append(encoder.decode(text_tokens[i:i+4096]))
+
+        llm = ChatVertexAI(max_output_tokens=1024)
+        conversation = ConversationChain(llm=llm, memory=ConversationBufferMemory())
+
+        summarized_text = ""
+        for i, text_segment in enumerate(texts):
+            response = conversation.predict(input="Write a summary of the following text:\n\n" + text_segment)
+            summarized_text += response + "\n\n"
+        if len(texts) == 1:
+            return summarized_text
+        else:
+            return summarize_text(summarized_text, recursion_level=recursion_level+1)
+
+    # Read conversations from DataFrame
+    conversations = df['conversations'].tolist()
+
+    summarized_conversations = []
+    for conversation in conversations:
+        summarized_conversations.append(summarize_text(conversation))
+
+    return summarized_conversations
+
+def generate(summarized_texts):
+    vertexai.init(project="prj-adapt-ai-dev-001", location="us-west1")
+    model = GenerativeModel("gemini-1.0-pro-002")
+    for text in summarized_texts:
+        responses = model.generate_content(
+            [text],
+            generation_config={
+                "max_output_tokens": 1024,
+                "temperature": 0.2,
+                "top_p": 0.8,
+            },
+            safety_settings={
+                generative_models.HarmCategory.HARM_CATEGORY_HATE_SPEECH: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                generative_models.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                generative_models.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                generative_models.HarmCategory.HARM_CATEGORY_HARASSMENT: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            },
+            stream=True,
+        )
+
+        for response in responses:
+            print(response.text, end="")
+
+# Read DataFrame
+df = pd.read_excel("transcripts_0416 (1) 1.xlsx")
+
+# Summarize conversations
+summarized_texts = summarize_conversations(df)
+
+# Generate content
+generate(summarized_texts)
+
+
