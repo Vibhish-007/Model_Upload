@@ -690,4 +690,4 @@ summarized_texts = summarize_conversations(df)
 # Generate content
 generate(summarized_texts)
 
-!streamlit run /opt/conda/lib/python3.10/site-packages/ipykernel_launcher.py 
+Use case: To fetch customer details from database and generate responsive answers through natural language which will be used for Gen AI chatbot.
