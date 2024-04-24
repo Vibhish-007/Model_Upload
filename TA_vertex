@@ -691,3 +691,6 @@ summarized_texts = summarize_conversations(df)
 generate(summarized_texts)
 
 Use case: To fetch customer details from database and generate responsive answers through natural language which will be used for Gen AI chatbot.
+
+Reduction in Task Resolution Time and Task Resolution Rate, Reduction in Number of Delayed Tasks and Average Delay Time 
+
