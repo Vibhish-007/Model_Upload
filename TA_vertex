@@ -694,3 +694,28 @@ Use case: To fetch customer details from database and generate responsive answer
 
 Reduction in Task Resolution Time and Task Resolution Rate, Reduction in Number of Delayed Tasks and Average Delay Time 
 
+
+from langchain_core.runnables import RunnableParallel,RunnablePassthrough
+ 
+ 
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
+ 
+rag_prompt_template = """Answer questions based on the context provided. The AI is designed to provide relevant responses to user question.
+Question:
+{question}
+ 
+Context:
+{context}"""
+ 
+rag_prompt = PromptTemplate.from_template(rag_prompt_template)
+rag_chain_from_docs = (
+RunnablePassthrough.assign(context=(lambda x: format_docs(x['context'])))
+| rag_prompt
+| llm
+| StrOutputParser()
+)
+ 
+rag_chain_with_source = RunnableParallel(
+{"context":retriever, "question":RunnablePassthrough()}).assign(answer=rag_chain_from_docs)
+
