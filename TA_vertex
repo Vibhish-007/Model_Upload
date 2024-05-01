@@ -719,3 +719,40 @@ RunnablePassthrough.assign(context=(lambda x: format_docs(x['context'])))
 rag_chain_with_source = RunnableParallel(
 {"context":retriever, "question":RunnablePassthrough()}).assign(answer=rag_chain_from_docs)
 
+
+import os
+import pandas as pd
+
+# Function to get all file paths with a specific name in a directory and its subdirectories
+def get_file_paths(root_dir, file_name):
+    file_paths = []
+    for root, dirs, files in os.walk(root_dir):
+        for file in files:
+            if file == file_name:
+                file_paths.append(os.path.join(root, file))
+    return file_paths
+
+# Paths to the three month folders
+month_folders = ['september', 'october', 'november']
+consolidated_reports = []
+
+# Iterate over each month folder
+for month in month_folders:
+    month_path = os.path.join('path_to_parent_directory', month)
+    
+    # Get all paths for consolidated_daily_dispatch_V1 reports in the month folder
+    report_paths = get_file_paths(month_path, 'consolidated_daily_dispatch_V1.xlsx')
+    
+    # Read each report and append to the consolidated_reports list
+    for report_path in report_paths:
+        report_df = pd.read_excel(report_path)
+        consolidated_reports.append(report_df)
+
+# Concatenate all reports into a single DataFrame
+final_report = pd.concat(consolidated_reports, ignore_index=True)
+
+# Write the concatenated DataFrame to a new Excel file
+final_report.to_excel('path_to_save/final_consolidated_report.xlsx', index=False)
+
+print("Final consolidated report saved successfully.")
+
