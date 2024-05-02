@@ -759,31 +759,22 @@ print("Final consolidated report saved successfully.")
 
 
 
-# Read each report and append to the consolidated_reports list
+# Read each report and concatenate all sheets into a single DataFrame
     for report_path in report_paths:
         xls = pd.ExcelFile(report_path)
-        report_dict = {}
-        # Read each sheet into a separate DataFrame and store in a dictionary
         for sheet_name in xls.sheet_names:
-            report_dict[sheet_name] = pd.read_excel(xls, sheet_name)
-        consolidated_reports.append(report_dict)
+            clean_sheet = clean_sheet_name(sheet_name)
+            if clean_sheet not in consolidated_reports:
+                consolidated_reports[clean_sheet] = []
+            # Read the sheet data and store it in the corresponding key
+            df = pd.read_excel(xls, sheet_name)
+            consolidated_reports[clean_sheet].append(df)
 
 # Write the concatenated DataFrames to a new Excel file with multiple sheets
 with pd.ExcelWriter('path_to_save/final_consolidated_report.xlsx') as writer:
-    for i, report_dict in enumerate(consolidated_reports, start=1):
-        for sheet_name, df in report_dict.items():
-            df.to_excel(writer, sheet_name=f"Report_{i}_{sheet_name}", index=False)
+    for sheet_name, dfs in consolidated_reports.items():
+        # Concatenate all DataFrames for the current sheet
+        concatenated_df = pd.concat(dfs, ignore_index=True)
+        concatenated_df.to_excel(writer, sheet_name=sheet_name, index=False)
 
 print("Final consolidated report saved successfully.")
-
-def clean_sheet_name(sheet_name):
-    return re.sub(r'[\\/:"*?<>|]', '_', sheet_name)
-
-  for report_path in report_paths:
-        xls = pd.ExcelFile(report_path)
-        report_dict = {}
-        # Read each sheet into a separate DataFrame and store in a dictionary
-        for sheet_name in xls.sheet_names:
-            clean_sheet = clean_sheet_name(sheet_name)
-            report_dict[clean_sheet] = pd.read_excel(xls, sheet_name)
-        consolidated_reports.append(report_dict)
