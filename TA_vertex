@@ -756,3 +756,22 @@ final_report.to_excel('path_to_save/final_consolidated_report.xlsx', index=False
 
 print("Final consolidated report saved successfully.")
 
+
+
+
+# Read each report and append to the consolidated_reports list
+    for report_path in report_paths:
+        xls = pd.ExcelFile(report_path)
+        report_dict = {}
+        # Read each sheet into a separate DataFrame and store in a dictionary
+        for sheet_name in xls.sheet_names:
+            report_dict[sheet_name] = pd.read_excel(xls, sheet_name)
+        consolidated_reports.append(report_dict)
+
+# Write the concatenated DataFrames to a new Excel file with multiple sheets
+with pd.ExcelWriter('path_to_save/final_consolidated_report.xlsx') as writer:
+    for i, report_dict in enumerate(consolidated_reports, start=1):
+        for sheet_name, df in report_dict.items():
+            df.to_excel(writer, sheet_name=f"Report_{i}_{sheet_name}", index=False)
+
+print("Final consolidated report saved successfully.")
